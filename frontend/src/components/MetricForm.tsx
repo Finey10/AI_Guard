@@ -147,6 +147,7 @@ export const MetricForm: React.FC<MetricFormProps> = ({
         setFormData((prev) => ({
           ...prev,
           service_name: match.id,
+          latency_threshold_ms: match.defaultThresholdMs,
           slo_target: match.defaultSlo
         }));
         if (errors.service_name) {
@@ -209,6 +210,9 @@ export const MetricForm: React.FC<MetricFormProps> = ({
                     errors.service_name ? 'border-rose-500' : 'border-[#6F4E37]/50 focus:border-[#E6E0F0]'
                   } rounded-xl px-3 py-2.5 text-sm text-[#E5E4E2] focus:outline-none focus:ring-1 focus:ring-[#E6E0F0]/40 font-mono shadow-inner appearance-none cursor-pointer pr-10`}
                 >
+                  <option value="" disabled className="bg-[#18100C] text-[#E6E0F0]/50 font-mono">
+                    -- Select Target Microservice --
+                  </option>
                   {PRODUCTION_SERVICES.map((group) => (
                     <optgroup
                       key={group.category}

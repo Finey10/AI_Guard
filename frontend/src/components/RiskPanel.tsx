@@ -2,37 +2,39 @@
 
 import React from 'react';
 import { Flame } from 'lucide-react';
-import { RiskFactor } from '@/lib/types';
+import { RiskFactor, RecommendationType } from '@/lib/types';
 
 interface RiskPanelProps {
   riskScore: number;
   factors: RiskFactor[];
+  recommendation?: RecommendationType;
 }
 
 export const RiskPanel: React.FC<RiskPanelProps> = ({
   riskScore,
-  factors
+  factors,
+  recommendation
 }) => {
-  const isHighRisk = riskScore >= 65;
-  const isMediumRisk = riskScore >= 35 && riskScore < 65;
+  const isHighRisk = recommendation ? recommendation === 'WAIT' : riskScore >= 60;
+  const isMediumRisk = recommendation ? recommendation === 'GO_WITH_SAFE_GUARD' : (riskScore >= 30 && riskScore < 60);
 
   const scoreColor = isHighRisk
     ? 'text-rose-400 drop-shadow-[0_0_12px_rgba(239,68,68,0.7)]'
     : isMediumRisk
     ? 'text-amber-400 drop-shadow-[0_0_12px_rgba(245,158,11,0.7)]'
-    : 'text-[#E5E4E2] drop-shadow-[0_0_12px_rgba(230,224,240,0.6)]';
+    : 'text-emerald-400 drop-shadow-[0_0_12px_rgba(16,185,129,0.7)]';
 
   const barColor = isHighRisk
     ? 'from-[#8C6246] via-rose-500 to-red-600 shadow-[0_0_15px_rgba(239,68,68,0.7)]'
     : isMediumRisk
-    ? 'from-[#6F4E37] via-amber-500 to-orange-500 shadow-[0_0_15px_rgba(245,158,11,0.7)]'
-    : 'from-[#6F4E37] via-[#8C6246] to-[#E6E0F0] shadow-[0_0_15px_rgba(230,224,240,0.6)]';
+    ? 'from-[#6F4E37] via-amber-500 to-yellow-400 shadow-[0_0_15px_rgba(245,158,11,0.7)]'
+    : 'from-[#6F4E37] via-emerald-500 to-teal-400 shadow-[0_0_15px_rgba(16,185,129,0.6)]';
 
   const riskBadge = isHighRisk
-    ? { label: 'CRITICAL RISK', bg: 'bg-rose-950/80 text-rose-300 border-rose-500/60 shadow-[0_0_10px_rgba(239,68,68,0.3)]' }
+    ? { label: 'CRITICAL RISK', bg: 'bg-rose-950/80 text-rose-300 border-rose-500/70 shadow-[0_0_12px_rgba(239,68,68,0.5)]' }
     : isMediumRisk
-    ? { label: 'ELEVATED RISK', bg: 'bg-amber-950/80 text-amber-300 border-amber-500/60 shadow-[0_0_10px_rgba(245,158,11,0.3)]' }
-    : { label: 'LOW RISK', bg: 'bg-[#291B14] text-[#E5E4E2] border-[#6F4E37] shadow-[0_0_10px_rgba(111,78,55,0.4)]' };
+    ? { label: 'ELEVATED RISK', bg: 'bg-amber-950/80 text-amber-300 border-amber-500/70 shadow-[0_0_12px_rgba(245,158,11,0.5)]' }
+    : { label: 'LOW RISK', bg: 'bg-emerald-950/80 text-emerald-300 border-emerald-500/70 shadow-[0_0_12px_rgba(16,185,129,0.5)]' };
 
   return (
     <div className="glass-panel rounded-2xl p-5 shadow-2xl flex flex-col justify-between">
@@ -47,7 +49,7 @@ export const RiskPanel: React.FC<RiskPanelProps> = ({
             <p className="text-[11px] text-[#E6E0F0]/70 font-sans">Statistical risk model (0-100)</p>
           </div>
           <span
-            className={`text-xs px-3 py-1 rounded-full font-mono font-bold border ${riskBadge.bg}`}
+            className={`text-xs px-3 py-1 rounded-full font-mono font-bold border transition-all ${riskBadge.bg}`}
           >
             {riskBadge.label}
           </span>

@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Sparkles, Radio, KeyRound, UserCheck } from 'lucide-react';
+import { Sparkles, Radio, KeyRound, UserCheck, Plus } from 'lucide-react';
 import { PRESETS, ScenarioPreset } from '@/lib/mockData';
 import { AuthUser } from '@/lib/types';
 
@@ -11,6 +11,7 @@ interface HeaderProps {
   isMock: boolean;
   lastAnalyzedAt: string | null;
   onSelectPreset: (preset: ScenarioPreset) => void;
+  onSelectNew: () => void;
   activePresetId?: string;
   currentUser?: AuthUser | null;
   onOpenAuth: () => void;
@@ -20,6 +21,7 @@ export const Header: React.FC<HeaderProps> = ({
   isBackendConnected,
   isMock,
   onSelectPreset,
+  onSelectNew,
   activePresetId,
   currentUser,
   onOpenAuth
@@ -57,36 +59,8 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           </div>
 
-          {/* Right Controls: Status & Presets & Auth Tab */}
+          {/* Right Controls: Presets & Auth Tab */}
           <div className="flex flex-wrap items-center gap-2.5">
-            {/* Backend Connection Status */}
-            <div
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono font-semibold border transition-all ${
-                isBackendConnected
-                  ? 'bg-emerald-950/70 text-[#E5E4E2] border-emerald-500/60 shadow-[0_0_12px_rgba(16,185,129,0.25)]'
-                  : isMock
-                  ? 'bg-[#291A13] text-[#E6E0F0] border-[#6F4E37]/60 shadow-[0_0_12px_rgba(111,78,55,0.3)]'
-                  : 'bg-[#1C120D] text-[#E5E4E2]/60 border-slate-800'
-              }`}
-            >
-              <div
-                className={`w-2 h-2 rounded-full ${
-                  isBackendConnected
-                    ? 'bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.9)] animate-pulse'
-                    : isMock
-                    ? 'bg-[#E6E0F0] shadow-[0_0_8px_rgba(230,224,240,0.9)]'
-                    : 'bg-slate-500'
-                }`}
-              />
-              <span>
-                {isBackendConnected
-                  ? 'API: LIVE ONLINE'
-                  : isMock
-                  ? 'MOCK ENGINE ACTIVE'
-                  : 'CONNECTING...'}
-              </span>
-            </div>
-
             {/* Presets Toggle Group */}
             <div className="flex items-center bg-[#1F140F]/90 p-1 rounded-xl border border-[#6F4E37]/50 shadow-inner">
               <span className="text-[11px] font-mono font-bold text-[#E6E0F0]/80 px-2 flex items-center gap-1">
@@ -109,6 +83,21 @@ export const Header: React.FC<HeaderProps> = ({
                   </button>
                 );
               })}
+
+              {/* New Option */}
+              <button
+                type="button"
+                onClick={onSelectNew}
+                className={`px-3 py-1 text-xs font-mono font-bold rounded-lg transition-all duration-200 cursor-pointer flex items-center gap-1 ${
+                  activePresetId === 'new'
+                    ? 'bg-gradient-to-r from-[#6F4E37] via-[#855E43] to-[#6F4E37] text-[#E5E4E2] shadow-[0_0_15px_rgba(111,78,55,0.6)] border border-[#E6E0F0]/50'
+                    : 'text-[#E6E0F0]/70 hover:text-[#E5E4E2] hover:bg-[#2E1E16]'
+                }`}
+                title="Create a new release telemetry analysis"
+              >
+                <Plus className="w-3 h-3 text-[#E6E0F0]" />
+                <span>New</span>
+              </button>
             </div>
 
             {/* Authentication Tab Button */}
