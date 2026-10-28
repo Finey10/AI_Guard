@@ -6,7 +6,9 @@ import { MetricForm } from '@/components/MetricForm';
 import { BudgetGauge } from '@/components/BudgetGauge';
 import { RiskPanel } from '@/components/RiskPanel';
 import { RecommendationPanel } from '@/components/RecommendationPanel';
-import { ReleaseAnalysisRequest, ReleaseAnalysisResponse } from '@/lib/types';
+import { SignalIndicator } from '@/components/SignalIndicator';
+import { AuthModal } from '@/components/AuthModal';
+import { ReleaseAnalysisRequest, ReleaseAnalysisResponse, AuthUser } from '@/lib/types';
 import { SAFE_SCENARIO, ScenarioPreset } from '@/lib/mockData';
 import { analyzeRelease, checkBackendHealth } from '@/lib/api';
 
@@ -18,6 +20,35 @@ export default function DashboardPage() {
   const [isMock, setIsMock] = useState<boolean>(true);
   const [backendConnected, setBackendConnected] = useState<boolean | null>(null);
   const [lastAnalyzedAt, setLastAnalyzedAt] = useState<string | null>('Initial Benchmark');
+
+  // Authentication State
+  const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
+
+  // Restore session from localStorage on mount
+  useEffect(() => {
+    try {
+      const savedUser = localStorage.getItem('signal_ops_auth_user');
+      if (savedUser) {
+        setCurrentUser(JSON.parse(savedUser));
+      }
+    } catch {
+      // localStorage read error ignored
+    }
+  }, []);
+
+  const handleLoginSuccess = (user: AuthUser) => {
+    setCurrentUser(user);
+  };
+
+  const handleLogout = () => {
+    try {
+      localStorage.removeItem('signal_ops_auth_user');
+    } catch {
+      // localStorage remove error ignored
+    }
+    setCurrentUser(null);
+  };
 
   const checkHealth = useCallback(async () => {
     const isOnline = await checkBackendHealth();
@@ -55,8 +86,8 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col selection:bg-red-500 selection:text-white">
-      {/* Header */}
+    <div className="min-h-screen flex flex-col selection:bg-[#6F4E37] selection:text-[#E6E0F0]">
+      {/* Header with Auth Tab */}
       <Header
         selectedServiceName={formData.service_name}
         isBackendConnected={backendConnected}
@@ -64,13 +95,15 @@ export default function DashboardPage() {
         lastAnalyzedAt={lastAnalyzedAt}
         onSelectPreset={handleSelectPreset}
         activePresetId={activePresetId}
+        currentUser={currentUser}
+        onOpenAuth={() => setIsAuthModalOpen(true)}
       />
 
       {/* Main Container */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          {/* Left Column: Simple Clean Form (5 cols) */}
-          <div className="lg:col-span-5">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Top Row: Release Telemetry (5 cols) & Deployment Decision (7 cols) - Perfectly Matched Height */}
+          <div className="lg:col-span-5 flex flex-col">
             <MetricForm
               initialValues={formData}
               onSubmit={handleAnalyze}
@@ -79,17 +112,24 @@ export default function DashboardPage() {
             />
           </div>
 
-          {/* Right Column: Decision Hero + Dual Visual Gauges (7 cols) */}
-          <div className="lg:col-span-7 space-y-6">
-            {/* Recommendation Hero Panel */}
+          <div className="lg:col-span-7 flex flex-col">
             <RecommendationPanel
               recommendation={response.recommendation}
               explanation={response.explanation}
               mitigations={response.mitigations}
               deploymentTimingAdvice={response.deployment_timing_advice}
             />
+          </div>
 
-            {/* Two Gauges Side-by-Side */}
+          {/* Second Row: Signal Indicator (5 cols below Release Telemetry) & Dual Gauges (7 cols) */}
+          <div className="lg:col-span-5 flex flex-col">
+            <SignalIndicator
+              recommendation={response.recommendation}
+              riskScore={response.risk_score}
+            />
+          </div>
+
+          <div className="lg:col-span-7">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Panel 1: Budget Gauge */}
               <BudgetGauge
@@ -109,10 +149,19 @@ export default function DashboardPage() {
         </div>
       </main>
 
+      {/* Authentication Modal / Tab Dialog */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        onLoginSuccess={handleLoginSuccess}
+        currentUser={currentUser}
+        onLogout={handleLogout}
+      />
+
       {/* Minimal Clean Footer */}
-      <footer className="border-t border-slate-900 bg-slate-950/60 py-4 mt-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between text-xs text-slate-500 font-mono">
-          <span className="font-bold text-slate-300">SIGNAL OPS</span>
+      <footer className="border-t border-[#6F4E37]/35 bg-[#160E0A]/90 py-4 mt-8 backdrop-blur-md">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between text-xs text-[#E6E0F0]/70 font-mono">
+          <span className="font-bold text-[#E5E4E2]">SIGNAL OPS</span>
           <span>Reliability & Change-Risk Advisor</span>
         </div>
       </footer>
