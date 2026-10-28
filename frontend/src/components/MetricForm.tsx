@@ -9,6 +9,7 @@ interface MetricFormProps {
   onSubmit: (data: ReleaseAnalysisRequest) => void;
   isLoading: boolean;
   onReset: () => void;
+  className?: string;
 }
 
 export interface ServiceCategory {
@@ -65,7 +66,8 @@ export const MetricForm: React.FC<MetricFormProps> = ({
   initialValues,
   onSubmit,
   isLoading,
-  onReset
+  onReset,
+  className
 }) => {
   const [formData, setFormData] = useState<ReleaseAnalysisRequest>(initialValues);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -87,8 +89,8 @@ export const MetricForm: React.FC<MetricFormProps> = ({
       newErrors.service_name = 'Service name is required';
     }
 
-    if (formData.slo_target <= 0 || formData.slo_target >= 100) {
-      newErrors.slo_target = 'SLO target must be between 0.1% and 99.999%';
+    if (formData.slo_target <= 0 || formData.slo_target > 100) {
+      newErrors.slo_target = 'SLO target must be between 0.1% and 100%';
     }
 
     if (formData.observed_availability < 0 || formData.observed_availability > 100) {
@@ -138,15 +140,22 @@ export const MetricForm: React.FC<MetricFormProps> = ({
     }
 
     setIsCustomService(false);
+
     for (const group of PRODUCTION_SERVICES) {
       const match = group.services.find((s) => s.id === selectedId);
       if (match) {
         setFormData((prev) => ({
           ...prev,
           service_name: match.id,
-          slo_target: match.defaultSlo,
-          latency_threshold_ms: match.defaultThresholdMs
+          slo_target: match.defaultSlo
         }));
+        if (errors.service_name) {
+          setErrors((prev) => {
+            const updated = { ...prev };
+            delete updated.service_name;
+            return updated;
+          });
+        }
         return;
       }
     }
@@ -155,16 +164,16 @@ export const MetricForm: React.FC<MetricFormProps> = ({
   };
 
   return (
-    <div className="glass-panel rounded-2xl p-5 shadow-2xl">
-      <div className="flex items-center justify-between pb-3 mb-4 border-b border-slate-800">
-        <h2 className="text-sm font-bold text-white flex items-center gap-2 font-mono">
-          <Activity className="w-4 h-4 text-cyan-400" />
+    <div className={`glass-panel rounded-2xl p-6 shadow-2xl h-full min-h-[440px] flex flex-col justify-between ${className || ''}`}>
+      <div className="flex items-center justify-between pb-3.5 mb-2 border-b border-[#6F4E37]/40">
+        <h2 className="text-sm font-bold text-[#E5E4E2] flex items-center gap-2 font-mono">
+          <Activity className="w-4 h-4 text-[#E6E0F0]" />
           RELEASE TELEMETRY
         </h2>
         <button
           type="button"
           onClick={onReset}
-          className="text-xs font-mono text-slate-400 hover:text-cyan-300 flex items-center gap-1 transition-colors px-2 py-1 rounded hover:bg-slate-800"
+          className="text-xs font-mono text-[#E6E0F0]/80 hover:text-[#E5E4E2] flex items-center gap-1 transition-colors px-2.5 py-1 rounded hover:bg-[#2A1C15] border border-[#6F4E37]/50"
           title="Reset to defaults"
         >
           <RotateCcw className="w-3.5 h-3.5" />
@@ -172,161 +181,164 @@ export const MetricForm: React.FC<MetricFormProps> = ({
         </button>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Target Service Dropdown */}
-        <div>
-          <div className="flex items-center justify-between mb-1.5">
-            <label className="block text-xs font-mono font-bold text-slate-300 uppercase">
-              Target Service <span className="text-rose-400">*</span>
-            </label>
-            <button
-              type="button"
-              onClick={() => setIsCustomService(!isCustomService)}
-              className="text-[10px] font-mono text-cyan-400 hover:text-cyan-300 flex items-center gap-1"
-            >
-              <Edit3 className="w-3 h-3" />
-              {isCustomService ? 'Choose list' : 'Custom'}
-            </button>
+      <form onSubmit={handleSubmit} className="flex-1 flex flex-col justify-between gap-4">
+        {/* Form Fields Container */}
+        <div className="space-y-4">
+          {/* Target Service Dropdown */}
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block text-xs font-mono font-bold text-[#E5E4E2] uppercase">
+                Target Service <span className="text-rose-400">*</span>
+              </label>
+              <button
+                type="button"
+                onClick={() => setIsCustomService(!isCustomService)}
+                className="text-[10px] font-mono text-[#E6E0F0] hover:underline flex items-center gap-1 cursor-pointer"
+              >
+                <Edit3 className="w-3 h-3" />
+                {isCustomService ? 'Choose list' : 'Custom'}
+              </button>
+            </div>
+
+            {!isCustomService ? (
+              <div className="relative">
+                <select
+                  value={formData.service_name}
+                  onChange={(e) => handleSelectService(e.target.value)}
+                  className={`w-full bg-[#18100C]/90 border ${
+                    errors.service_name ? 'border-rose-500' : 'border-[#6F4E37]/50 focus:border-[#E6E0F0]'
+                  } rounded-xl px-3 py-2.5 text-sm text-[#E5E4E2] focus:outline-none focus:ring-1 focus:ring-[#E6E0F0]/40 font-mono shadow-inner appearance-none cursor-pointer pr-10`}
+                >
+                  {PRODUCTION_SERVICES.map((group) => (
+                    <optgroup
+                      key={group.category}
+                      label={group.category}
+                      className="bg-[#241712] text-[#E5E4E2] font-bold"
+                    >
+                      {group.services.map((svc) => (
+                        <option
+                          key={svc.id}
+                          value={svc.id}
+                          className="bg-[#18100C] text-[#E5E4E2] py-1 font-mono"
+                        >
+                          {svc.label}
+                        </option>
+                      ))}
+                    </optgroup>
+                  ))}
+                  <option value="__custom__" className="bg-[#241712] text-[#E6E0F0] font-bold">
+                    + Custom Microservice Name...
+                  </option>
+                </select>
+                <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-[#E6E0F0]">
+                  <ChevronDown className="w-4 h-4" />
+                </div>
+              </div>
+            ) : (
+              <div className="relative">
+                <input
+                  type="text"
+                  value={formData.service_name}
+                  onChange={(e) => handleChange('service_name', e.target.value)}
+                  placeholder="Enter custom service identifier, e.g. order-dispatcher"
+                  className={`w-full bg-[#18100C]/90 border ${
+                    errors.service_name ? 'border-rose-500' : 'border-[#6F4E37]/50 focus:border-[#E6E0F0]'
+                  } rounded-xl px-3 py-2.5 text-sm text-[#E5E4E2] placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-[#E6E0F0]/40 font-mono shadow-inner`}
+                />
+              </div>
+            )}
+
+            {errors.service_name && (
+              <p className="text-xs text-rose-400 mt-1 flex items-center gap-1 font-mono">
+                <AlertCircle className="w-3 h-3" />
+                {errors.service_name}
+              </p>
+            )}
           </div>
 
-          {!isCustomService ? (
-            <div className="relative">
-              <select
-                value={formData.service_name}
-                onChange={(e) => handleSelectService(e.target.value)}
-                className={`w-full bg-slate-950/90 border ${
-                  errors.service_name ? 'border-rose-500' : 'border-slate-800 focus:border-cyan-400'
-                } rounded-xl px-3 py-2 text-sm text-cyan-200 focus:outline-none focus:ring-1 focus:ring-cyan-400/50 font-mono shadow-inner appearance-none cursor-pointer pr-10`}
-              >
-                {PRODUCTION_SERVICES.map((group) => (
-                  <optgroup
-                    key={group.category}
-                    label={group.category}
-                    className="bg-slate-900 text-slate-300 font-bold"
-                  >
-                    {group.services.map((svc) => (
-                      <option
-                        key={svc.id}
-                        value={svc.id}
-                        className="bg-slate-950 text-cyan-200 py-1 font-mono"
-                      >
-                        {svc.label}
-                      </option>
-                    ))}
-                  </optgroup>
-                ))}
-                <option value="__custom__" className="bg-slate-900 text-amber-300 font-bold">
-                  + Custom Microservice Name...
-                </option>
-              </select>
-              <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-cyan-400">
-                <ChevronDown className="w-4 h-4" />
+          {/* SLO & Availability Telemetry */}
+          <div className="p-3.5 rounded-xl bg-[#1A110D]/90 border border-[#6F4E37]/45 space-y-3 shadow-inner">
+            <div className="flex items-center gap-2 text-xs font-mono font-bold text-[#E6E0F0]">
+              <ShieldCheck className="w-4 h-4 text-[#E6E0F0]" />
+              <span>SLO INDICATORS</span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
+              <div>
+                <label className="block text-[11px] font-mono text-[#E6E0F0]/70 mb-1 truncate">
+                  SLO Target (%)
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0.1"
+                  max="100"
+                  value={formData.slo_target}
+                  onChange={(e) => handleChange('slo_target', parseFloat(e.target.value) || 0)}
+                  className="w-full bg-[#140D09] border border-[#6F4E37]/60 rounded-lg px-2.5 py-1.5 text-xs text-[#E5E4E2] font-mono focus:outline-none focus:ring-1 focus:ring-[#E6E0F0] focus:border-[#E6E0F0]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-mono text-[#E6E0F0]/70 mb-1 truncate">
+                  Availability (%)
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  max="100"
+                  value={formData.observed_availability}
+                  onChange={(e) =>
+                    handleChange('observed_availability', parseFloat(e.target.value) || 0)
+                  }
+                  className="w-full bg-[#140D09] border border-[#6F4E37]/60 rounded-lg px-2.5 py-1.5 text-xs text-[#E5E4E2] font-mono focus:outline-none focus:ring-1 focus:ring-[#E6E0F0] focus:border-[#E6E0F0]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-mono text-[#E6E0F0]/70 mb-1 truncate">
+                  Error Rate (%)
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  max="100"
+                  value={formData.error_rate_percent}
+                  onChange={(e) =>
+                    handleChange('error_rate_percent', parseFloat(e.target.value) || 0)
+                  }
+                  className="w-full bg-[#140D09] border border-[#6F4E37]/60 rounded-lg px-2.5 py-1.5 text-xs text-[#E5E4E2] font-mono focus:outline-none focus:ring-1 focus:ring-[#E6E0F0] focus:border-[#E6E0F0]"
+                />
               </div>
             </div>
-          ) : (
-            <div className="relative">
-              <input
-                type="text"
-                value={formData.service_name}
-                onChange={(e) => handleChange('service_name', e.target.value)}
-                placeholder="Enter custom service identifier, e.g. order-dispatcher"
-                className={`w-full bg-slate-950/90 border ${
-                  errors.service_name ? 'border-rose-500' : 'border-slate-800 focus:border-cyan-400'
-                } rounded-xl px-3 py-2 text-sm text-cyan-200 placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-cyan-400/50 font-mono shadow-inner`}
-              />
-            </div>
-          )}
-
-          {errors.service_name && (
-            <p className="text-xs text-rose-400 mt-1 flex items-center gap-1 font-mono">
-              <AlertCircle className="w-3 h-3" />
-              {errors.service_name}
-            </p>
-          )}
-        </div>
-
-        {/* SLO & Availability Telemetry */}
-        <div className="p-3.5 rounded-xl bg-slate-950/70 border border-cyan-500/20 space-y-3 shadow-inner">
-          <div className="flex items-center gap-2 text-xs font-mono font-bold text-cyan-300">
-            <ShieldCheck className="w-4 h-4 text-emerald-400" />
-            <span>SLO INDICATORS</span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
-            <div>
-              <label className="block text-[11px] font-mono text-slate-400 mb-1 truncate">
-                SLO Target (%)
-              </label>
-              <input
-                type="number"
-                step="0.01"
-                min="90"
-                max="99.999"
-                value={formData.slo_target}
-                onChange={(e) => handleChange('slo_target', parseFloat(e.target.value) || 0)}
-                className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-cyan-200 font-mono focus:outline-none focus:ring-1 focus:ring-cyan-400"
-              />
-            </div>
-
-            <div>
-              <label className="block text-[11px] font-mono text-slate-400 mb-1 truncate">
-                Availability (%)
-              </label>
-              <input
-                type="number"
-                step="0.01"
-                min="80"
-                max="100"
-                value={formData.observed_availability}
-                onChange={(e) =>
-                  handleChange('observed_availability', parseFloat(e.target.value) || 0)
-                }
-                className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-cyan-200 font-mono focus:outline-none focus:ring-1 focus:ring-cyan-400"
-              />
-            </div>
-
-            <div>
-              <label className="block text-[11px] font-mono text-slate-400 mb-1 truncate">
-                Error Rate (%)
-              </label>
-              <input
-                type="number"
-                step="0.01"
-                min="0"
-                max="100"
-                value={formData.error_rate_percent}
-                onChange={(e) =>
-                  handleChange('error_rate_percent', parseFloat(e.target.value) || 0)
-                }
-                className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-cyan-200 font-mono focus:outline-none focus:ring-1 focus:ring-cyan-400"
-              />
-            </div>
+          {/* Proposed Deployment Time */}
+          <div>
+            <label className="block text-xs font-mono font-bold text-[#E5E4E2] mb-1 flex items-center gap-1.5 uppercase">
+              <Clock className="w-3.5 h-3.5 text-[#E6E0F0]" />
+              Deployment Time <span className="text-rose-400">*</span>
+            </label>
+            <input
+              type="datetime-local"
+              value={formData.proposed_deployment_time}
+              onChange={(e) => handleChange('proposed_deployment_time', e.target.value)}
+              className="w-full bg-[#18100C]/90 border border-[#6F4E37]/50 focus:border-[#E6E0F0] rounded-xl px-3 py-2 text-sm text-[#E5E4E2] font-mono focus:outline-none focus:ring-1 focus:ring-[#E6E0F0]/40"
+            />
           </div>
         </div>
 
-        {/* Proposed Deployment Time */}
-        <div>
-          <label className="block text-xs font-mono font-bold text-slate-300 mb-1 flex items-center gap-1.5 uppercase">
-            <Clock className="w-3.5 h-3.5 text-cyan-400" />
-            Deployment Time <span className="text-rose-400">*</span>
-          </label>
-          <input
-            type="datetime-local"
-            value={formData.proposed_deployment_time}
-            onChange={(e) => handleChange('proposed_deployment_time', e.target.value)}
-            className="w-full bg-slate-950/80 border border-slate-800 focus:border-cyan-400 rounded-xl px-3 py-2 text-sm text-cyan-200 font-mono focus:outline-none focus:ring-1 focus:ring-cyan-400/50"
-          />
-        </div>
-
-        {/* Action Button */}
-        <div className="pt-1">
+        {/* Action Button at bottom */}
+        <div className="pt-2">
           <button
             type="submit"
             disabled={isLoading}
             className={`w-full py-3 px-4 rounded-xl font-mono font-bold text-sm tracking-wider uppercase flex items-center justify-center gap-2 transition-all duration-300 ${
               isLoading
-                ? 'bg-slate-800 text-slate-500 cursor-not-allowed'
-                : 'bg-gradient-to-r from-red-600 via-rose-600 to-red-500 hover:from-red-500 hover:to-rose-500 text-white shadow-[0_0_25px_rgba(239,68,68,0.4)] active:scale-[0.99] border border-red-500/50'
+                ? 'bg-[#291B14] text-[#E6E0F0]/40 cursor-not-allowed'
+                : 'bg-gradient-to-r from-[#6F4E37] via-[#8C6246] to-[#6F4E37] hover:from-[#8C6246] hover:to-[#A37353] text-[#E5E4E2] shadow-[0_0_25px_rgba(111,78,55,0.6)] active:scale-[0.99] border border-[#E6E0F0]/40 cursor-pointer'
             }`}
           >
             {isLoading ? (
@@ -336,7 +348,7 @@ export const MetricForm: React.FC<MetricFormProps> = ({
               </>
             ) : (
               <>
-                <Play className="w-4 h-4 fill-current text-white" />
+                <Play className="w-4 h-4 fill-current text-[#E5E4E2]" />
                 <span>ANALYZE RELEASE SAFETY</span>
               </>
             )}

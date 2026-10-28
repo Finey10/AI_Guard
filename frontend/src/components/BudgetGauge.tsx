@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { AlertTriangle, CheckCircle2, Shield, Activity } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Shield } from 'lucide-react';
 import { ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
 interface BudgetGaugeProps {
@@ -31,9 +31,9 @@ export const BudgetGauge: React.FC<BudgetGaugeProps> = ({
     ? '#ef4444' // ruby rose
     : isWarning
     ? '#f59e0b' // amber
-    : '#10b981'; // emerald green
+    : '#10b981'; // healthy emerald
 
-  const consumedColor = '#1e293b'; // slate-800
+  const consumedColor = '#2D1E16'; // Deep Mocha background track
 
   return (
     <div className="glass-panel rounded-2xl p-5 shadow-2xl flex flex-col justify-between relative overflow-hidden">
@@ -47,13 +47,13 @@ export const BudgetGauge: React.FC<BudgetGaugeProps> = ({
 
       <div>
         {/* Header */}
-        <div className={`flex items-center justify-between pb-3 border-b border-slate-800 ${isExhausted ? 'pt-6' : ''}`}>
+        <div className={`flex items-center justify-between pb-3 border-b border-[#6F4E37]/40 ${isExhausted ? 'pt-6' : ''}`}>
           <div>
-            <h3 className="text-sm font-bold text-white flex items-center gap-2 font-mono">
-              <Shield className="w-4 h-4 text-cyan-400 drop-shadow-[0_0_8px_rgba(6,182,212,0.8)]" />
+            <h3 className="text-sm font-bold text-[#E5E4E2] flex items-center gap-2 font-mono">
+              <Shield className="w-4 h-4 text-[#E6E0F0] drop-shadow-[0_0_8px_rgba(230,224,240,0.8)]" />
               SLO ERROR BUDGET
             </h3>
-            <p className="text-[11px] text-slate-400">Rolling 30-day SRE consumption window</p>
+            <p className="text-[11px] text-[#E6E0F0]/70 font-sans">Rolling 30-day SRE consumption window</p>
           </div>
           <span
             className={`text-xs px-3 py-1 rounded-full font-mono font-bold border ${
@@ -61,7 +61,7 @@ export const BudgetGauge: React.FC<BudgetGaugeProps> = ({
                 ? 'bg-rose-950/80 text-rose-300 border-rose-500/60 shadow-[0_0_10px_rgba(239,68,68,0.3)]'
                 : isWarning
                 ? 'bg-amber-950/80 text-amber-300 border-amber-500/60 shadow-[0_0_10px_rgba(245,158,11,0.3)]'
-                : 'bg-emerald-950/80 text-emerald-300 border-emerald-500/60 shadow-[0_0_10px_rgba(16,185,129,0.3)]'
+                : 'bg-[#291B14] text-[#E5E4E2] border-[#6F4E37] shadow-[0_0_10px_rgba(111,78,55,0.4)]'
             }`}
           >
             {isExhausted
@@ -97,10 +97,10 @@ export const BudgetGauge: React.FC<BudgetGaugeProps> = ({
             </ResponsiveContainer>
             {/* Center label with glowing typography */}
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-              <span className="text-3xl font-black font-mono text-white tracking-tight drop-shadow-[0_0_12px_rgba(255,255,255,0.4)]">
+              <span className="text-3xl font-black font-mono text-[#E5E4E2] tracking-tight drop-shadow-[0_0_12px_rgba(230,224,240,0.5)]">
                 {remainingBudgetPercent.toFixed(1)}%
               </span>
-              <span className="text-[11px] font-mono text-cyan-300 font-bold uppercase tracking-wider">
+              <span className="text-[11px] font-mono text-[#E6E0F0] font-bold uppercase tracking-wider">
                 REMAINING
               </span>
             </div>
@@ -109,15 +109,15 @@ export const BudgetGauge: React.FC<BudgetGaugeProps> = ({
 
         {/* Budget breakdown metrics grid */}
         <div className="grid grid-cols-2 gap-2 text-xs mb-3 font-mono">
-          <div className="p-2.5 rounded-xl bg-slate-950/70 border border-slate-800 shadow-inner">
-            <span className="text-slate-500 block text-[10px] uppercase">SLO Target</span>
-            <span className="text-slate-100 font-bold text-sm">
+          <div className="p-2.5 rounded-xl bg-[#1A110D]/90 border border-[#6F4E37]/40 shadow-inner">
+            <span className="text-[#E6E0F0]/60 block text-[10px] uppercase">SLO Target</span>
+            <span className="text-[#E5E4E2] font-bold text-sm">
               {sloTarget.toFixed(2)}%
             </span>
           </div>
 
-          <div className="p-2.5 rounded-xl bg-slate-950/70 border border-slate-800 shadow-inner">
-            <span className="text-slate-500 block text-[10px] uppercase">Observed Availability</span>
+          <div className="p-2.5 rounded-xl bg-[#1A110D]/90 border border-[#6F4E37]/40 shadow-inner">
+            <span className="text-[#E6E0F0]/60 block text-[10px] uppercase">Observed Availability</span>
             <span
               className={`font-bold text-sm ${
                 observedAvailability < sloTarget ? 'text-rose-400' : 'text-emerald-400'
@@ -127,16 +127,16 @@ export const BudgetGauge: React.FC<BudgetGaugeProps> = ({
             </span>
           </div>
 
-          <div className="p-2.5 rounded-xl bg-slate-950/70 border border-slate-800 shadow-inner">
-            <span className="text-slate-500 block text-[10px] uppercase">Allowed Outage</span>
-            <span className="text-slate-300 text-xs font-semibold">{allowedUnavailability}%</span>
+          <div className="p-2.5 rounded-xl bg-[#1A110D]/90 border border-[#6F4E37]/40 shadow-inner">
+            <span className="text-[#E6E0F0]/60 block text-[10px] uppercase">Allowed Outage</span>
+            <span className="text-[#E5E4E2] text-xs font-semibold">{allowedUnavailability}%</span>
           </div>
 
-          <div className="p-2.5 rounded-xl bg-slate-950/70 border border-slate-800 shadow-inner">
-            <span className="text-slate-500 block text-[10px] uppercase">Budget Consumed</span>
+          <div className="p-2.5 rounded-xl bg-[#1A110D]/90 border border-[#6F4E37]/40 shadow-inner">
+            <span className="text-[#E6E0F0]/60 block text-[10px] uppercase">Budget Consumed</span>
             <span
               className={`text-xs font-bold ${
-                budgetConsumedPercent > 80 ? 'text-rose-400' : 'text-slate-300'
+                budgetConsumedPercent > 80 ? 'text-rose-400' : 'text-[#E5E4E2]'
               }`}
             >
               {budgetConsumedPercent.toFixed(1)}%
@@ -152,13 +152,13 @@ export const BudgetGauge: React.FC<BudgetGaugeProps> = ({
             ? 'bg-rose-950/40 border-rose-500/50 text-rose-200'
             : isWarning
             ? 'bg-amber-950/40 border-amber-500/50 text-amber-200'
-            : 'bg-emerald-950/40 border-emerald-500/50 text-emerald-200'
+            : 'bg-[#261912]/80 border-[#6F4E37]/60 text-[#E5E4E2]'
         }`}
       >
         {isCritical ? (
           <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
         ) : (
-          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+          <CheckCircle2 className="w-4 h-4 text-[#E6E0F0] shrink-0 mt-0.5" />
         )}
         <div className="font-sans font-medium text-[11px] leading-relaxed">
           {isExhausted
