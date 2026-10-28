@@ -38,7 +38,7 @@ from schemas import (
     ReleaseRecord,
 )
 
-logger = logging.getLogger("releaseguard")
+logger = logging.getLogger("signalops")
 logging.basicConfig(level=logging.INFO)
 
 
@@ -49,7 +49,7 @@ logging.basicConfig(level=logging.INFO)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Verify data files are readable at startup."""
-    logger.info("ReleaseGuard API starting — verifying data files…")
+    logger.info("SignalOps API starting — verifying data files…")
     try:
         data_service.verify_data_files()
         logger.info("Data files verified successfully.")
@@ -57,7 +57,7 @@ async def lifespan(app: FastAPI):
         logger.error("STARTUP FAILURE: data files could not be loaded: %s", exc)
         raise
     yield
-    logger.info("ReleaseGuard API shutting down.")
+    logger.info("SignalOps API shutting down.")
 
 
 # ---------------------------------------------------------------------------
@@ -65,9 +65,9 @@ async def lifespan(app: FastAPI):
 # ---------------------------------------------------------------------------
 
 app = FastAPI(
-    title="ReleaseGuard API",
+    title="SignalOps API",
     description=(
-        "Zero Latency ReleaseGuard AI — deterministic release risk analysis.\n\n"
+        "SignalOps (Team Zero Latency) — deterministic release risk analysis.\n\n"
         "**Disclaimer**: All risk scores and recommendations are prototype heuristics "
         "for demonstration purposes only. Not for real operational use."
     ),
