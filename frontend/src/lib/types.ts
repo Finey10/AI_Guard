@@ -52,3 +52,13 @@ export interface AnalysisState {
   error: string | null;
   backendConnected: boolean | null;
 }
+
+export interface AuthUser {
+  id: string;
+  loginType: 'email' | 'phone';
+  identifier: string;
+  name: string;
+  role: string;
+  token?: string;
+  authenticatedAt: string;
+}
