@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { ReleaseAnalysisRequest } from '@/lib/types';
-import { Play, RotateCcw, AlertCircle, Activity, Clock, ShieldCheck, FileText, ChevronDown, Edit3 } from 'lucide-react';
+import { Play, RotateCcw, AlertCircle, Activity, Clock, ShieldCheck, ChevronDown, Edit3 } from 'lucide-react';
 
 interface MetricFormProps {
   initialValues: ReleaseAnalysisRequest;
@@ -157,20 +157,15 @@ export const MetricForm: React.FC<MetricFormProps> = ({
   return (
     <div className="glass-panel rounded-2xl p-5 shadow-2xl">
       <div className="flex items-center justify-between pb-3 mb-4 border-b border-slate-800">
-        <div>
-          <h2 className="text-sm font-bold text-white flex items-center gap-2 font-mono">
-            <Activity className="w-4 h-4 text-cyan-400 drop-shadow-[0_0_8px_rgba(6,182,212,0.8)]" />
-            TELEMETRY & CHANGE CONFIGURATION
-          </h2>
-          <p className="text-[11px] text-slate-400">
-            Define SLO threshold parameters, blast radius, and deployment schedule.
-          </p>
-        </div>
+        <h2 className="text-sm font-bold text-white flex items-center gap-2 font-mono">
+          <Activity className="w-4 h-4 text-cyan-400" />
+          RELEASE TELEMETRY
+        </h2>
         <button
           type="button"
           onClick={onReset}
-          className="text-xs font-mono text-slate-400 hover:text-cyan-300 flex items-center gap-1 transition-colors px-2.5 py-1 rounded-lg hover:bg-slate-800 border border-transparent hover:border-cyan-500/30"
-          title="Reset form to defaults"
+          className="text-xs font-mono text-slate-400 hover:text-cyan-300 flex items-center gap-1 transition-colors px-2 py-1 rounded hover:bg-slate-800"
+          title="Reset to defaults"
         >
           <RotateCcw className="w-3.5 h-3.5" />
           RESET
@@ -180,7 +175,7 @@ export const MetricForm: React.FC<MetricFormProps> = ({
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Target Service Dropdown */}
         <div>
-          <div className="flex items-center justify-between mb-1">
+          <div className="flex items-center justify-between mb-1.5">
             <label className="block text-xs font-mono font-bold text-slate-300 uppercase">
               Target Service <span className="text-rose-400">*</span>
             </label>
@@ -190,7 +185,7 @@ export const MetricForm: React.FC<MetricFormProps> = ({
               className="text-[10px] font-mono text-cyan-400 hover:text-cyan-300 flex items-center gap-1"
             >
               <Edit3 className="w-3 h-3" />
-              {isCustomService ? 'Choose from list' : 'Type custom name'}
+              {isCustomService ? 'Choose list' : 'Custom'}
             </button>
           </div>
 
@@ -201,7 +196,7 @@ export const MetricForm: React.FC<MetricFormProps> = ({
                 onChange={(e) => handleSelectService(e.target.value)}
                 className={`w-full bg-slate-950/90 border ${
                   errors.service_name ? 'border-rose-500' : 'border-slate-800 focus:border-cyan-400'
-                } rounded-xl px-3 py-2.5 text-sm text-cyan-200 focus:outline-none focus:ring-1 focus:ring-cyan-400/50 font-mono shadow-inner appearance-none cursor-pointer pr-10`}
+                } rounded-xl px-3 py-2 text-sm text-cyan-200 focus:outline-none focus:ring-1 focus:ring-cyan-400/50 font-mono shadow-inner appearance-none cursor-pointer pr-10`}
               >
                 {PRODUCTION_SERVICES.map((group) => (
                   <optgroup
@@ -237,7 +232,7 @@ export const MetricForm: React.FC<MetricFormProps> = ({
                 placeholder="Enter custom service identifier, e.g. order-dispatcher"
                 className={`w-full bg-slate-950/90 border ${
                   errors.service_name ? 'border-rose-500' : 'border-slate-800 focus:border-cyan-400'
-                } rounded-xl px-3 py-2.5 text-sm text-cyan-200 placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-cyan-400/50 font-mono shadow-inner`}
+                } rounded-xl px-3 py-2 text-sm text-cyan-200 placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-cyan-400/50 font-mono shadow-inner`}
               />
             </div>
           )}
@@ -248,21 +243,18 @@ export const MetricForm: React.FC<MetricFormProps> = ({
               {errors.service_name}
             </p>
           )}
-          <p className="text-[10px] font-mono text-slate-500 mt-1">
-            Categorized production microservices with pre-calibrated SRE thresholds.
-          </p>
         </div>
 
         {/* SLO & Availability Telemetry */}
         <div className="p-3.5 rounded-xl bg-slate-950/70 border border-cyan-500/20 space-y-3 shadow-inner">
           <div className="flex items-center gap-2 text-xs font-mono font-bold text-cyan-300">
             <ShieldCheck className="w-4 h-4 text-emerald-400" />
-            <span>SLO INDICATORS (ROLLING 30-DAY WINDOW)</span>
+            <span>SLO INDICATORS</span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
             <div>
-              <label className="block text-[11px] font-mono text-slate-400 mb-1 truncate" title="SLO Target (%)">
+              <label className="block text-[11px] font-mono text-slate-400 mb-1 truncate">
                 SLO Target (%)
               </label>
               <input
@@ -277,7 +269,7 @@ export const MetricForm: React.FC<MetricFormProps> = ({
             </div>
 
             <div>
-              <label className="block text-[11px] font-mono text-slate-400 mb-1 truncate" title="Observed Availability (%)">
+              <label className="block text-[11px] font-mono text-slate-400 mb-1 truncate">
                 Availability (%)
               </label>
               <input
@@ -294,7 +286,7 @@ export const MetricForm: React.FC<MetricFormProps> = ({
             </div>
 
             <div>
-              <label className="block text-[11px] font-mono text-slate-400 mb-1 truncate" title="Error Rate (%)">
+              <label className="block text-[11px] font-mono text-slate-400 mb-1 truncate">
                 Error Rate (%)
               </label>
               <input
@@ -312,56 +304,40 @@ export const MetricForm: React.FC<MetricFormProps> = ({
           </div>
         </div>
 
-        {/* Proposed Deployment Time & Release Notes */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-xs font-mono font-bold text-slate-300 mb-1 flex items-center gap-1.5 uppercase">
-              <Clock className="w-3.5 h-3.5 text-cyan-400" />
-              Proposed Time <span className="text-rose-400">*</span>
-            </label>
-            <input
-              type="datetime-local"
-              value={formData.proposed_deployment_time}
-              onChange={(e) => handleChange('proposed_deployment_time', e.target.value)}
-              className="w-full bg-slate-950/80 border border-slate-800 focus:border-cyan-400 rounded-xl px-3 py-2 text-sm text-cyan-200 font-mono focus:outline-none focus:ring-1 focus:ring-cyan-400/50"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-mono font-bold text-slate-300 mb-1 flex items-center gap-1.5 uppercase">
-              <FileText className="w-3.5 h-3.5 text-slate-400" />
-              Release Notes (Optional)
-            </label>
-            <input
-              type="text"
-              value={formData.release_notes || ''}
-              onChange={(e) => handleChange('release_notes', e.target.value)}
-              placeholder="e.g. Migration to v2 auth endpoints"
-              className="w-full bg-slate-950/80 border border-slate-800 focus:border-cyan-400 rounded-xl px-3 py-2 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-cyan-400/50"
-            />
-          </div>
+        {/* Proposed Deployment Time */}
+        <div>
+          <label className="block text-xs font-mono font-bold text-slate-300 mb-1 flex items-center gap-1.5 uppercase">
+            <Clock className="w-3.5 h-3.5 text-cyan-400" />
+            Deployment Time <span className="text-rose-400">*</span>
+          </label>
+          <input
+            type="datetime-local"
+            value={formData.proposed_deployment_time}
+            onChange={(e) => handleChange('proposed_deployment_time', e.target.value)}
+            className="w-full bg-slate-950/80 border border-slate-800 focus:border-cyan-400 rounded-xl px-3 py-2 text-sm text-cyan-200 font-mono focus:outline-none focus:ring-1 focus:ring-cyan-400/50"
+          />
         </div>
 
-        {/* Radiant Action Button */}
-        <div className="pt-2">
+        {/* Action Button */}
+        <div className="pt-1">
           <button
             type="submit"
             disabled={isLoading}
             className={`w-full py-3 px-4 rounded-xl font-mono font-bold text-sm tracking-wider uppercase flex items-center justify-center gap-2 transition-all duration-300 ${
               isLoading
                 ? 'bg-slate-800 text-slate-500 cursor-not-allowed'
-                : 'bg-gradient-to-r from-cyan-500 via-indigo-600 to-emerald-500 hover:from-cyan-400 hover:via-indigo-500 hover:to-emerald-400 text-white shadow-[0_0_25px_rgba(6,182,212,0.4)] hover:shadow-[0_0_35px_rgba(16,185,129,0.5)] active:scale-[0.99] border border-cyan-400/40'
+                : 'bg-gradient-to-r from-red-600 via-rose-600 to-red-500 hover:from-red-500 hover:to-rose-500 text-white shadow-[0_0_25px_rgba(239,68,68,0.4)] active:scale-[0.99] border border-red-500/50'
             }`}
           >
             {isLoading ? (
               <>
                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                <span>EVALUATING MULTI-AGENT SAFETY MATRIX...</span>
+                <span>ANALYZING SAFETY...</span>
               </>
             ) : (
               <>
                 <Play className="w-4 h-4 fill-current text-white" />
-                <span>ANALYZE RELEASE SAFETY NOW</span>
+                <span>ANALYZE RELEASE SAFETY</span>
               </>
             )}
           </button>
