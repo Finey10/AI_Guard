@@ -1,0 +1,15 @@
+{
+  "peak_windows": [
+    {"label": "Friday afternoon", "day_of_week": 4, "hour_start": 14, "hour_end": 20, "risk_level": "high", "note": "Synthetic peak traffic window"},
+    {"label": "Monday morning", "day_of_week": 0, "hour_start": 8, "hour_end": 10, "risk_level": "medium", "note": "Post-weekend traffic surge"},
+    {"label": "Month-end processing", "day_of_month": [28, 29, 30, 31], "risk_level": "high", "note": "Synthetic batch processing period"}
+  ],
+  "freeze_windows": [
+    {"label": "Holiday freeze", "start": "2026-12-23", "end": "2027-01-02", "note": "Synthetic holiday freeze period"}
+  ],
+  "low_risk_windows": [
+    {"label": "Tuesday morning", "day_of_week": 1, "hour_start": 9, "hour_end": 12, "note": "Historically low traffic in synthetic data"},
+    {"label": "Wednesday morning", "day_of_week": 2, "hour_start": 9, "hour_end": 12, "note": "Historically low traffic in synthetic data"}
+  ],
+  "data_note": "All calendar entries are synthetic and for demonstration purposes only. Do not use for real operational decisions."
+}
