@@ -438,7 +438,11 @@ def _call_openai(
     start_time = time.perf_counter()
     from openai import OpenAI
 
-    client = OpenAI(api_key=api_key)
+    groq_key = os.environ.get("GROQ_API_KEY")
+    base_url = os.environ.get("OPENAI_BASE_URL")
+    if not base_url and (groq_key or (api_key and api_key.startswith("gsk_"))):
+        base_url = "https://api.groq.com/openai/v1"
+    client = OpenAI(api_key=api_key, base_url=base_url)
     prompt = _build_user_prompt(precomputed, context)
 
     response = client.chat.completions.create(
@@ -534,7 +538,8 @@ def generate_release_advice(
 
     # Extract API keys from environment
     gemini_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
-    openai_key = os.environ.get("OPENAI_API_KEY")
+    groq_key = os.environ.get("GROQ_API_KEY")
+    openai_key = os.environ.get("OPENAI_API_KEY") or groq_key
     selected_provider = (provider or os.environ.get("RELEASEGUARD_LLM_PROVIDER", "auto")).lower()
 
     # Determine execution strategy
@@ -558,8 +563,8 @@ def generate_release_advice(
             if selected_provider == "gemini":
                 return generate_fallback_advice(analysis_dict, ctx, reason=f"GEMINI_ERROR: {exc}")
 
-    # Try OpenAI if configured or auto
-    if (selected_provider in ("auto", "openai")) and openai_key:
+    # Try OpenAI / Groq if configured or auto
+    if (selected_provider in ("auto", "openai", "groq")) and openai_key:
         try:
             target_model = model or os.environ.get("RELEASEGUARD_LLM_MODEL", "gpt-4o-mini")
             logger.info("Generating advice with OpenAI (%s)...", target_model)

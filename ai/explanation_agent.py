@@ -213,7 +213,8 @@ def generate_explanation(
     start_time = time.perf_counter()
 
     gemini_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
-    openai_key = os.environ.get("OPENAI_API_KEY")
+    groq_key = os.environ.get("GROQ_API_KEY")
+    openai_key = os.environ.get("OPENAI_API_KEY") or groq_key
     selected_provider = (provider or os.environ.get("RELEASEGUARD_LLM_PROVIDER", "auto")).lower()
 
     if selected_provider == "fallback":
@@ -293,13 +294,17 @@ def generate_explanation(
                     reason=f"GEMINI_ERROR: {exc}",
                 )
 
-    # 2. Try OpenAI
-    if (selected_provider in ("auto", "openai")) and openai_key:
+    # 2. Try OpenAI / Groq
+    if (selected_provider in ("auto", "openai", "groq")) and openai_key:
         try:
-            target_model = model or os.environ.get("RELEASEGUARD_LLM_MODEL", "gpt-4o-mini")
+            base_url = os.environ.get("OPENAI_BASE_URL")
+            if not base_url and (groq_key or selected_provider == "groq" or (openai_key and openai_key.startswith("gsk_"))):
+                base_url = "https://api.groq.com/openai/v1"
+            default_model = "llama-3.3-70b-versatile" if (groq_key or selected_provider == "groq" or (base_url and "groq" in base_url) or (openai_key and openai_key.startswith("gsk_"))) else "gpt-4o-mini"
+            target_model = model or os.environ.get("RELEASEGUARD_LLM_MODEL", default_model)
             from openai import OpenAI
 
-            client = OpenAI(api_key=openai_key, timeout=timeout_seconds)
+            client = OpenAI(api_key=openai_key, base_url=base_url, timeout=timeout_seconds)
             user_prompt = _format_prompt(
                 risk_score=risk_score,
                 recommendation=recommendation,
