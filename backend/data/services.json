@@ -1,0 +1,37 @@
+[
+  {
+    "service_name": "checkout-service",
+    "slo_target": 99.9,
+    "owner_team": "payments",
+    "criticality": "high",
+    "description": "Handles payment checkout flows"
+  },
+  {
+    "service_name": "user-auth",
+    "slo_target": 99.95,
+    "owner_team": "identity",
+    "criticality": "high",
+    "description": "Authentication and session management"
+  },
+  {
+    "service_name": "recommendation-engine",
+    "slo_target": 99.5,
+    "owner_team": "ml-platform",
+    "criticality": "medium",
+    "description": "Product recommendation ML service"
+  },
+  {
+    "service_name": "notification-service",
+    "slo_target": 99.0,
+    "owner_team": "growth",
+    "criticality": "low",
+    "description": "Email and push notification delivery"
+  },
+  {
+    "service_name": "inventory-api",
+    "slo_target": 99.9,
+    "owner_team": "supply-chain",
+    "criticality": "high",
+    "description": "Real-time inventory availability"
+  }
+]
