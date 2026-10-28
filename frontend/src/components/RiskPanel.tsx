@@ -1,29 +1,20 @@
 'use client';
 
 import React from 'react';
-import { Flame, Activity, History, Zap, Sparkles } from 'lucide-react';
-import { ChangeSize, RiskFactor } from '@/lib/types';
+import { Flame } from 'lucide-react';
+import { RiskFactor } from '@/lib/types';
 
 interface RiskPanelProps {
   riskScore: number;
   factors: RiskFactor[];
-  recentIncidents: number;
-  latencyMs: number;
-  latencyThresholdMs: number;
-  changeSize: ChangeSize;
 }
 
 export const RiskPanel: React.FC<RiskPanelProps> = ({
   riskScore,
-  factors,
-  recentIncidents,
-  latencyMs,
-  latencyThresholdMs,
-  changeSize
+  factors
 }) => {
   const isHighRisk = riskScore >= 65;
   const isMediumRisk = riskScore >= 35 && riskScore < 65;
-  const isLowRisk = riskScore < 35;
 
   const scoreColor = isHighRisk
     ? 'text-rose-400 drop-shadow-[0_0_12px_rgba(239,68,68,0.7)]'
@@ -43,9 +34,6 @@ export const RiskPanel: React.FC<RiskPanelProps> = ({
     ? { label: 'ELEVATED RISK', bg: 'bg-amber-950/80 text-amber-300 border-amber-500/60 shadow-[0_0_10px_rgba(245,158,11,0.3)]' }
     : { label: 'LOW RISK', bg: 'bg-emerald-950/80 text-emerald-300 border-emerald-500/60 shadow-[0_0_10px_rgba(16,185,129,0.3)]' };
 
-  const isLatencyBreached = latencyMs > latencyThresholdMs;
-  const isLatencyNearThreshold = !isLatencyBreached && latencyMs > latencyThresholdMs * 0.85;
-
   return (
     <div className="glass-panel rounded-2xl p-5 shadow-2xl flex flex-col justify-between">
       <div>
@@ -56,7 +44,7 @@ export const RiskPanel: React.FC<RiskPanelProps> = ({
               <Flame className="w-4 h-4 text-amber-400 drop-shadow-[0_0_8px_rgba(245,158,11,0.8)]" />
               CHANGE RISK INDEX
             </h3>
-            <p className="text-[11px] text-slate-400">Calibrated multi-factor statistical model</p>
+            <p className="text-[11px] text-slate-400">Statistical risk model (0-100)</p>
           </div>
           <span
             className={`text-xs px-3 py-1 rounded-full font-mono font-bold border ${riskBadge.bg}`}
@@ -66,19 +54,19 @@ export const RiskPanel: React.FC<RiskPanelProps> = ({
         </div>
 
         {/* Large Score & Visual Meter */}
-        <div className="my-4">
+        <div className="my-5">
           <div className="flex items-baseline justify-between mb-2 font-mono">
             <span className="text-xs text-slate-400 uppercase tracking-wider font-semibold">
               COMPOSITE SCORE
             </span>
             <div className="flex items-baseline gap-1">
-              <span className={`text-3xl font-black ${scoreColor}`}>{riskScore}</span>
+              <span className={`text-4xl font-black ${scoreColor}`}>{riskScore}</span>
               <span className="text-sm text-slate-500 font-bold">/100</span>
             </div>
           </div>
 
           {/* Segmented Gradient Progress Bar */}
-          <div className="w-full bg-slate-950 rounded-full h-3.5 p-0.5 border border-cyan-500/25 overflow-hidden shadow-inner">
+          <div className="w-full bg-slate-950 rounded-full h-4 p-0.5 border border-cyan-500/25 overflow-hidden shadow-inner">
             <div
               className={`h-full rounded-full bg-gradient-to-r ${barColor} transition-all duration-700 ease-out`}
               style={{ width: `${Math.min(100, Math.max(6, riskScore))}%` }}
@@ -92,57 +80,8 @@ export const RiskPanel: React.FC<RiskPanelProps> = ({
           </div>
         </div>
 
-        {/* Contextual Metric Cards */}
-        <div className="grid grid-cols-3 gap-2 mb-4 font-mono">
-          {/* Outages */}
-          <div
-            className={`p-2.5 rounded-xl border text-center ${
-              recentIncidents > 0
-                ? 'bg-rose-950/40 border-rose-500/60 text-rose-300'
-                : 'bg-slate-950/70 border-slate-800 text-slate-400'
-            }`}
-          >
-            <History className="w-4 h-4 mx-auto mb-1 text-slate-400" />
-            <div className="text-[10px] text-slate-500 uppercase">Incidents</div>
-            <div className="text-sm font-bold text-slate-200">
-              {recentIncidents === 0 ? '0 (Clean)' : `${recentIncidents} logged`}
-            </div>
-          </div>
-
-          {/* Latency Delta */}
-          <div
-            className={`p-2.5 rounded-xl border text-center ${
-              isLatencyBreached
-                ? 'bg-rose-950/40 border-rose-500/60 text-rose-300'
-                : isLatencyNearThreshold
-                ? 'bg-amber-950/40 border-amber-500/60 text-amber-300'
-                : 'bg-slate-950/70 border-slate-800 text-slate-400'
-            }`}
-          >
-            <Activity className="w-4 h-4 mx-auto mb-1 text-slate-400" />
-            <div className="text-[10px] text-slate-500 uppercase">P95 Latency</div>
-            <div className="text-sm font-bold text-slate-200">
-              {latencyMs}ms{' '}
-              <span className="text-[10px] font-normal text-slate-500">/{latencyThresholdMs}</span>
-            </div>
-          </div>
-
-          {/* Change Size */}
-          <div
-            className={`p-2.5 rounded-xl border text-center ${
-              changeSize === 'large'
-                ? 'bg-amber-950/40 border-amber-500/60 text-amber-300'
-                : 'bg-slate-950/70 border-slate-800 text-slate-400'
-            }`}
-          >
-            <Zap className="w-4 h-4 mx-auto mb-1 text-slate-400" />
-            <div className="text-[10px] text-slate-500 uppercase">Scope</div>
-            <div className="text-sm font-bold text-slate-200 capitalize">{changeSize}</div>
-          </div>
-        </div>
-
         {/* Top Contributing Risk Drivers */}
-        <div className="space-y-1.5 font-sans">
+        <div className="space-y-2 font-sans mt-4">
           <span className="text-xs font-mono font-bold text-slate-400 block mb-1 uppercase">
             PRIMARY RISK DRIVERS
           </span>
@@ -171,12 +110,6 @@ export const RiskPanel: React.FC<RiskPanelProps> = ({
             </div>
           ))}
         </div>
-      </div>
-
-      {/* Advisory Note */}
-      <div className="mt-4 pt-3 border-t border-slate-800 text-[11px] font-mono text-slate-500 flex items-center justify-between">
-        <span>STATISTICAL SRE BASELINE</span>
-        <span className="text-cyan-400 font-bold">SIGNAL OPS RISK ENGINE</span>
       </div>
     </div>
   );
