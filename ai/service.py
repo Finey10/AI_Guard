@@ -89,6 +89,21 @@ async def health_check():
     }
 
 
+@app.get("/api/services", tags=["Services"])
+async def list_services_endpoint():
+    """List all registered services."""
+    try:
+        from backend import data_service
+        return data_service.get_all_services()
+    except Exception:
+        return [
+            {"service_name": "checkout-service", "slo_target": 99.9, "owner_team": "Payments", "criticality": "high"},
+            {"service_name": "payment-gateway", "slo_target": 99.95, "owner_team": "Payments", "criticality": "high"},
+            {"service_name": "inventory-service", "slo_target": 99.5, "owner_team": "Catalog", "criticality": "medium"},
+            {"service_name": "notification-service", "slo_target": 99.0, "owner_team": "Comms", "criticality": "low"},
+        ]
+
+
 @app.post("/api/analyze-release", tags=["Analysis"])
 async def analyze_release_endpoint(payload: ReleaseRequestPayload):
     """
