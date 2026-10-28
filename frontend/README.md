@@ -1,4 +1,4 @@
-# Zero Latency · ReleaseGuard AI (Frontend) 🛡️
+# SignalOps (Frontend) 🛡️
 
 **Deployment-Time Reliability & Change Risk Decision Support**  
 **Hackathon Team: Zero Latency (Team No. UG-42)**  
@@ -8,9 +8,9 @@
 
 ## Overview
 
-Zero Latency ReleaseGuard AI is a DevOps/SRE dashboard that brings real-time error-budget health and change-risk estimation into the moment of release.
+SignalOps is a DevOps/SRE dashboard that brings real-time error-budget health and change-risk estimation into the moment of release.
 
-![Zero Latency ReleaseGuard AI Dashboard](public/dashboard_preview.jpg)
+![SignalOps Dashboard](public/dashboard_preview.jpg)
 
 ### Core Capabilities:
 - **Error Budget Real-Time Visibility:** Radial gauge tracking Google SRE 30-day rolling error budgets, allowed unavailability, consumed ratio, and remaining headroom.
