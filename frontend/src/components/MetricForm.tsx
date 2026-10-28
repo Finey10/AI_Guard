@@ -74,7 +74,6 @@ export const MetricForm: React.FC<MetricFormProps> = ({
   React.useEffect(() => {
     setFormData(initialValues);
     setErrors({});
-    // Check if initial service is in known list
     const isKnown = PRODUCTION_SERVICES.some((group) =>
       group.services.some((s) => s.id === initialValues.service_name)
     );
@@ -98,18 +97,6 @@ export const MetricForm: React.FC<MetricFormProps> = ({
 
     if (formData.error_rate_percent < 0 || formData.error_rate_percent > 100) {
       newErrors.error_rate_percent = 'Error rate must be between 0% and 100%';
-    }
-
-    if (formData.latency_ms < 0) {
-      newErrors.latency_ms = 'Latency must be a positive number';
-    }
-
-    if (formData.latency_threshold_ms <= 0) {
-      newErrors.latency_threshold_ms = 'Threshold must be greater than 0';
-    }
-
-    if (formData.recent_incidents < 0) {
-      newErrors.recent_incidents = 'Incidents count cannot be negative';
     }
 
     if (!formData.proposed_deployment_time) {
@@ -151,7 +138,6 @@ export const MetricForm: React.FC<MetricFormProps> = ({
     }
 
     setIsCustomService(false);
-    // Find service definition
     for (const group of PRODUCTION_SERVICES) {
       const match = group.services.find((s) => s.id === selectedId);
       if (match) {
@@ -323,51 +309,6 @@ export const MetricForm: React.FC<MetricFormProps> = ({
                 className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-cyan-200 font-mono focus:outline-none focus:ring-1 focus:ring-cyan-400"
               />
             </div>
-          </div>
-        </div>
-
-        {/* Latency & Incident Context */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
-          <div>
-            <label className="block text-xs font-mono font-bold text-slate-300 mb-1 truncate" title="P95 Latency (ms)">
-              P95 Latency (ms)
-            </label>
-            <input
-              type="number"
-              min="1"
-              value={formData.latency_ms}
-              onChange={(e) => handleChange('latency_ms', parseInt(e.target.value) || 0)}
-              className="w-full bg-slate-950/80 border border-slate-800 focus:border-cyan-400 rounded-xl px-3 py-1.5 text-sm text-cyan-200 font-mono focus:outline-none focus:ring-1 focus:ring-cyan-400/50"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-mono font-bold text-slate-300 mb-1 truncate" title="SLA Threshold (ms)">
-              SLA Threshold (ms)
-            </label>
-            <input
-              type="number"
-              min="1"
-              value={formData.latency_threshold_ms}
-              onChange={(e) =>
-                handleChange('latency_threshold_ms', parseInt(e.target.value) || 0)
-              }
-              className="w-full bg-slate-950/80 border border-slate-800 focus:border-cyan-400 rounded-xl px-3 py-1.5 text-sm text-cyan-200 font-mono focus:outline-none focus:ring-1 focus:ring-cyan-400/50"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-mono font-bold text-slate-300 mb-1 truncate" title="Recent Incidents">
-              Recent Incidents
-            </label>
-            <input
-              type="number"
-              min="0"
-              max="20"
-              value={formData.recent_incidents}
-              onChange={(e) => handleChange('recent_incidents', parseInt(e.target.value) || 0)}
-              className="w-full bg-slate-950/80 border border-slate-800 focus:border-cyan-400 rounded-xl px-3 py-1.5 text-sm text-cyan-200 font-mono focus:outline-none focus:ring-1 focus:ring-cyan-400/50"
-            />
           </div>
         </div>
 
