@@ -16,15 +16,32 @@ An AI-powered deploy-time risk dashboard that brings reliability targets and cha
 
 ```
 AI_Guard/
-├── frontend/     # Next.js + Tailwind CSS dashboard
+├── frontend/     # Next.js 16 + TypeScript + Tailwind CSS dashboard
 ├── backend/      # Python FastAPI + LangChain agents
 └── data-ml/      # Data processing, SLO formulas, ML risk model
 ```
 
-## Tech Stack
-- **Frontend:** Next.js, Tailwind CSS
-- **Backend:** Python, FastAPI, LangChain, Pandas
-- **Database:** ChromaDB, PostgreSQL
+## Quick Start (Frontend Dashboard)
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+The dashboard will be accessible at `http://localhost:3000`.
+
+To build and run in production:
+```bash
+cd frontend
+npm run build
+npm start
+```
+
+### Environment Configuration
+Configure `NEXT_PUBLIC_API_BASE_URL` in `frontend/.env.local` (default: `http://localhost:8000`).
+
+---
 
 ## Branches
 - `main` — stable releases
