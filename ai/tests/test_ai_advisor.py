@@ -30,7 +30,7 @@ from ai_advisor import (
     generate_release_advice,
     generate_fallback_advice,
 )
-from main import app
+from ai.service import app
 
 
 # ---------------------------------------------------------------------------

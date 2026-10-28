@@ -29,7 +29,6 @@ from fastapi.middleware.cors import CORSMiddleware
 
 import data_service
 import risk_engine
-import ai_advisor
 from schemas import (
     AnalyzeReleaseRequest,
     AnalyzeReleaseResponse,
@@ -37,7 +36,6 @@ from schemas import (
     RiskFactor,
     ServiceInfo,
     ReleaseRecord,
-    DecisionAlias,
 )
 
 logger = logging.getLogger("releaseguard")
@@ -166,34 +164,12 @@ async def analyze_release(payload: AnalyzeReleaseRequest):
         )
         timing_advice = timing_info["advice"]
 
-    # Build AI Advisor advice (strictly preserving backend risk_score and recommendation)
-    advisor_output = ai_advisor.generate_release_advice(
-        precomputed_analysis={
-            **result,
-            "timing_advice": timing_advice,
-        },
-        context={
-            "service_name": payload.service_name,
-            "change_size": payload.change_size.value,
-            "files_changed": payload.files_changed,
-            "observed_availability": payload.observed_availability,
-            "error_rate_percent": payload.error_rate_percent,
-            "latency_ms": payload.latency_ms,
-            "latency_threshold_ms": payload.latency_threshold_ms,
-            "recent_incidents_30d": payload.recent_incidents_30d,
-            "proposed_deployment_time": payload.proposed_deployment_time,
-            "release_notes": payload.release_notes,
-            "timing_advice": timing_advice,
-        },
-    )
-
     # Build response
     budget_raw = result["error_budget"]
     response = AnalyzeReleaseResponse(
         service_name=result["service_name"],
         risk_score=result["risk_score"],
         recommendation=result["recommendation"],
-        decision_alias=advisor_output.decision_alias,
         error_budget=ErrorBudgetInfo(
             slo_target=budget_raw["slo_target"],
             observed_availability=budget_raw["observed_availability"],
@@ -201,12 +177,6 @@ async def analyze_release(payload: AnalyzeReleaseRequest):
             remaining_budget_percent=budget_raw["remaining_budget_percent"],
             is_exhausted=budget_raw["is_exhausted"],
         ),
-        remaining_budget_percent=budget_raw["remaining_budget_percent"],
-        budget_consumed_percent=budget_raw["budget_consumed_percent"],
-        explanation=advisor_output.explanation,
-        main_contributing_factors=advisor_output.main_contributing_factors,
-        mitigations=advisor_output.mitigations,
-        deployment_timing_advice=advisor_output.deployment_timing_advice,
         risk_factors=[
             RiskFactor(
                 name=f["name"],
@@ -215,42 +185,17 @@ async def analyze_release(payload: AnalyzeReleaseRequest):
             )
             for f in result["risk_factors"]
         ],
-        safeguards=result["safeguards"] or advisor_output.mitigations,
+        safeguards=result["safeguards"],
         investigation_recommendations=result["investigation_recommendations"],
         timing_advice=timing_advice,
         summary=result["summary"],
-        ai_advisor=advisor_output.model_dump(),
     )
 
     logger.info(
-        "analyze-release: service=%s score=%.1f recommendation=%s alias=%s fallback=%s",
+        "analyze-release: service=%s score=%.1f recommendation=%s",
         payload.service_name,
         result["risk_score"],
         result["recommendation"],
-        advisor_output.decision_alias,
-        advisor_output.is_fallback,
     )
 
     return response
-
-
-@app.post(
-    "/api/advisor/explain",
-    response_model=ai_advisor.AIAdvisorOutput,
-    tags=["Advisor"],
-)
-async def advisor_explain(precomputed_payload: dict):
-    """
-    Direct endpoint for the AI Advisor module.
-    Receives precomputed risk analysis from the deterministic engine and
-    returns structured JSON explanation, main contributing factors, and mitigations.
-
-    Guarantees:
-    - Never changes or overrides backend risk score or recommendation
-    - Gracefully falls back if LLM is unavailable or fails
-    - Enforces developer privacy and anti-gaming compliance
-    """
-    precomputed = precomputed_payload.get("precomputed_analysis", precomputed_payload)
-    context = precomputed_payload.get("context", {})
-    return ai_advisor.generate_release_advice(precomputed, context)
-

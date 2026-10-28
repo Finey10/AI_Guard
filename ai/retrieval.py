@@ -15,7 +15,7 @@ from typing import Any, Optional
 
 logger = logging.getLogger("releaseguard.retrieval")
 
-_POLICIES_DIR = Path(os.environ.get("POLICIES_DIR", Path(__file__).parent.parent / "data" / "policies"))
+_POLICIES_DIR = Path(os.environ.get("POLICIES_DIR", Path(__file__).parent / "data" / "policies"))
 _CHROMA_CLIENT = None
 _COLLECTION = None
 _RETRIEVAL_INITIALIZED = False

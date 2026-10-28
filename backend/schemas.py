@@ -26,12 +26,6 @@ class Recommendation(str, Enum):
     WAIT = "WAIT"
 
 
-class DecisionAlias(str, Enum):
-    DEPLOY = "DEPLOY"       # Mapped from GO
-    MONITOR = "MONITOR"     # Mapped from GO_WITH_SAFE_GUARD
-    HOLD = "HOLD"           # Mapped from WAIT
-
-
 # ---------------------------------------------------------------------------
 # Request model
 # ---------------------------------------------------------------------------
@@ -119,39 +113,7 @@ class AnalyzeReleaseResponse(BaseModel):
     service_name: str
     risk_score: float = Field(..., ge=0.0, le=100.0)
     recommendation: Recommendation
-    decision_alias: DecisionAlias = Field(
-        default=DecisionAlias.DEPLOY,
-        description="Mapped decision alias: DEPLOY (GO), MONITOR (GO_WITH_SAFE_GUARD), HOLD (WAIT)"
-    )
     error_budget: ErrorBudgetInfo
-
-    # Frontend top-level compatibility & AI advisor fields
-    remaining_budget_percent: float = Field(
-        default=100.0,
-        description="Top-level remaining budget percent (frontend compatibility)"
-    )
-    budget_consumed_percent: float = Field(
-        default=0.0,
-        description="Top-level budget consumed percent (frontend compatibility)"
-    )
-    explanation: str = Field(
-        default="",
-        description="Concise SRE-grade explanation of the risk decision"
-    )
-    main_contributing_factors: list[str] = Field(
-        default_factory=list,
-        description="Ranked primary drivers contributing to the risk score"
-    )
-    mitigations: list[str] = Field(
-        default_factory=list,
-        description="Actionable mitigation steps"
-    )
-    deployment_timing_advice: Optional[str] = Field(
-        default=None,
-        description="Calendar timing advice"
-    )
-
-    # Risk factor breakdown & existing fields (100% backward compatible)
     risk_factors: list[RiskFactor]
     safeguards: list[str] = Field(
         default_factory=list,
@@ -166,12 +128,6 @@ class AnalyzeReleaseResponse(BaseModel):
         description="Calendar-based timing advice for proposed_deployment_time"
     )
     summary: str = Field(..., description="One-line human-readable verdict")
-
-    # Detailed AI advisor output metadata
-    ai_advisor: Optional[dict] = Field(
-        default=None,
-        description="Full structured AI advisor output with transparency & governance metadata"
-    )
 
 
 # ---------------------------------------------------------------------------
