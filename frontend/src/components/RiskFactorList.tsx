@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { RiskFactor } from '@/lib/types';
-import { ListFilter, Sparkles, Cpu, AlertTriangle, ShieldCheck } from 'lucide-react';
+import { ListFilter, Sparkles, Cpu } from 'lucide-react';
 
 interface RiskFactorListProps {
   factors: RiskFactor[];
@@ -20,64 +20,64 @@ export const RiskFactorList: React.FC<RiskFactorListProps> = ({ factors }) => {
   const getImpactBadge = (impact: RiskFactor['impact']) => {
     switch (impact) {
       case 'critical':
-        return 'bg-rose-950/80 text-rose-300 border-rose-800';
+        return 'bg-rose-950/80 text-rose-300 border-rose-500/80 shadow-[0_0_10px_rgba(239,68,68,0.4)]';
       case 'high':
-        return 'bg-rose-950/50 text-rose-300 border-rose-800/60';
+        return 'bg-rose-950/50 text-rose-300 border-rose-500/60 shadow-[0_0_8px_rgba(239,68,68,0.25)]';
       case 'medium':
-        return 'bg-amber-950/50 text-amber-300 border-amber-800/60';
+        return 'bg-amber-950/50 text-amber-300 border-amber-500/60 shadow-[0_0_8px_rgba(245,158,11,0.25)]';
       case 'low':
       default:
-        return 'bg-emerald-950/50 text-emerald-300 border-emerald-800/60';
+        return 'bg-emerald-950/50 text-emerald-300 border-emerald-500/60 shadow-[0_0_8px_rgba(16,185,129,0.25)]';
     }
   };
 
   return (
-    <div className="bg-zinc-900/70 border border-zinc-800 rounded-xl p-5 shadow-xl backdrop-blur-sm">
+    <div className="glass-panel rounded-2xl p-5 shadow-2xl">
       {/* Header and Filter Controls */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3 mb-4 border-b border-zinc-800">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3 mb-4 border-b border-slate-800">
         <div>
-          <h3 className="text-sm font-semibold text-white flex items-center gap-2">
-            <ListFilter className="w-4 h-4 text-indigo-400" />
-            Detailed Risk Factor Attribution
+          <h3 className="text-sm font-bold text-white flex items-center gap-2 font-mono">
+            <ListFilter className="w-4 h-4 text-cyan-400 drop-shadow-[0_0_8px_rgba(6,182,212,0.8)]" />
+            FACTOR ATTRIBUTION & AUDIT TRAIL
           </h3>
-          <p className="text-xs text-zinc-400">
-            Explicit breakdown separating measured system telemetry from AI-generated contextual insights.
+          <p className="text-[11px] text-slate-400">
+            Explicit separation of deterministic system metrics and AI synthesized reasoning.
           </p>
         </div>
 
         {/* Filter buttons */}
-        <div className="flex items-center bg-zinc-950 rounded-lg p-1 border border-zinc-800 self-start sm:self-auto">
+        <div className="flex items-center bg-slate-950 p-1 rounded-xl border border-cyan-500/20 self-start sm:self-auto font-mono text-xs">
           <button
             onClick={() => setFilter('all')}
-            className={`px-2.5 py-1 text-xs rounded-md font-medium transition-all ${
+            className={`px-3 py-1 rounded-lg font-bold transition-all ${
               filter === 'all'
-                ? 'bg-zinc-800 text-white shadow-sm'
-                : 'text-zinc-400 hover:text-zinc-200'
+                ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/50 shadow-sm'
+                : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            All Factors ({factors.length})
+            ALL ({factors.length})
           </button>
           <button
             onClick={() => setFilter('measured')}
-            className={`px-2.5 py-1 text-xs rounded-md font-medium transition-all flex items-center gap-1 ${
+            className={`px-3 py-1 rounded-lg font-bold transition-all flex items-center gap-1.5 ${
               filter === 'measured'
-                ? 'bg-zinc-800 text-white shadow-sm'
-                : 'text-zinc-400 hover:text-zinc-200'
+                ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/50 shadow-sm'
+                : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            <Cpu className="w-3 h-3 text-cyan-400" />
-            Measured ({factors.filter((f) => !f.is_ai_generated).length})
+            <Cpu className="w-3.5 h-3.5 text-cyan-400" />
+            METRICS ({factors.filter((f) => !f.is_ai_generated).length})
           </button>
           <button
             onClick={() => setFilter('ai')}
-            className={`px-2.5 py-1 text-xs rounded-md font-medium transition-all flex items-center gap-1 ${
+            className={`px-3 py-1 rounded-lg font-bold transition-all flex items-center gap-1.5 ${
               filter === 'ai'
-                ? 'bg-zinc-800 text-white shadow-sm'
-                : 'text-zinc-400 hover:text-zinc-200'
+                ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/50 shadow-sm'
+                : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            <Sparkles className="w-3 h-3 text-indigo-400" />
-            AI Reasoning ({factors.filter((f) => f.is_ai_generated).length})
+            <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+            AI OPS ({factors.filter((f) => f.is_ai_generated).length})
           </button>
         </div>
       </div>
@@ -87,14 +87,14 @@ export const RiskFactorList: React.FC<RiskFactorListProps> = ({ factors }) => {
         {filteredFactors.map((factor, idx) => (
           <div
             key={idx}
-            className="p-3.5 rounded-lg bg-zinc-950/70 border border-zinc-800/80 hover:border-zinc-700 transition-all flex flex-col md:flex-row md:items-center md:justify-between gap-3"
+            className="p-3.5 rounded-xl bg-slate-950/70 border border-slate-800 hover:border-cyan-500/30 transition-all flex flex-col md:flex-row md:items-center md:justify-between gap-3"
           >
             <div className="flex items-start gap-3">
               <div
-                className={`p-1.5 rounded-md mt-0.5 shrink-0 ${
+                className={`p-2 rounded-lg mt-0.5 shrink-0 ${
                   factor.is_ai_generated
-                    ? 'bg-indigo-950/60 text-indigo-300 border border-indigo-800/60'
-                    : 'bg-zinc-900 text-cyan-400 border border-zinc-800'
+                    ? 'bg-indigo-950/80 text-indigo-300 border border-indigo-500/40 shadow-[0_0_8px_rgba(99,102,241,0.3)]'
+                    : 'bg-cyan-950/80 text-cyan-300 border border-cyan-500/40 shadow-[0_0_8px_rgba(6,182,212,0.3)]'
                 }`}
               >
                 {factor.is_ai_generated ? (
@@ -105,47 +105,39 @@ export const RiskFactorList: React.FC<RiskFactorListProps> = ({ factors }) => {
               </div>
               <div>
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-xs font-semibold text-zinc-100">{factor.name}</span>
-                  {/* Origin Badge */}
+                  <span className="text-xs font-bold text-slate-100 font-mono">{factor.name}</span>
                   {factor.is_ai_generated ? (
-                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-indigo-950/70 text-indigo-300 border border-indigo-800/50">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-indigo-950/70 text-indigo-300 border border-indigo-500/40">
                       <Sparkles className="w-2.5 h-2.5" />
-                      AI Synthesized
+                      AI SYNTHESIZED
                     </span>
                   ) : (
-                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-cyan-950/70 text-cyan-300 border border-cyan-800/50">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-cyan-950/70 text-cyan-300 border border-cyan-500/40">
                       <Cpu className="w-2.5 h-2.5" />
-                      Deterministic Metric
+                      SYSTEM METRIC
                     </span>
                   )}
                 </div>
-                <p className="text-xs text-zinc-400 mt-1 leading-relaxed">
+                <p className="text-xs text-slate-400 mt-1 leading-relaxed">
                   {factor.description}
                 </p>
               </div>
             </div>
 
-            {/* Impact & Weight badges */}
-            <div className="flex items-center gap-2 self-end md:self-auto shrink-0">
+            <div className="flex items-center gap-2 self-end md:self-auto shrink-0 font-mono">
               <span
-                className={`text-[11px] px-2.5 py-0.5 rounded-full font-mono uppercase font-medium border ${getImpactBadge(
+                className={`text-[10px] px-2.5 py-0.5 rounded-full uppercase font-bold border ${getImpactBadge(
                   factor.impact
                 )}`}
               >
                 {factor.impact}
               </span>
-              <span className="text-xs font-mono font-bold text-zinc-300 bg-zinc-900 px-2.5 py-1 rounded-md border border-zinc-800">
-                +{factor.weight} pts
+              <span className="text-xs font-bold text-cyan-200 bg-slate-900 px-2.5 py-1 rounded-lg border border-slate-800 shadow-inner">
+                +{factor.weight} PTS
               </span>
             </div>
           </div>
         ))}
-
-        {filteredFactors.length === 0 && (
-          <div className="text-center py-6 text-xs text-zinc-500">
-            No factors matching this category.
-          </div>
-        )}
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { AlertTriangle, CheckCircle2, TrendingDown, Shield } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Shield, Activity } from 'lucide-react';
 import { ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
 interface BudgetGaugeProps {
@@ -17,78 +17,74 @@ export const BudgetGauge: React.FC<BudgetGaugeProps> = ({
   remainingBudgetPercent,
   budgetConsumedPercent
 }) => {
-  // Allowed unavailability formula: 100 - SLO
   const allowedUnavailability = Math.max(0, 100 - sloTarget).toFixed(3);
-  const observedUnavailability = Math.max(0, 100 - observedAvailability).toFixed(3);
-
   const isExhausted = remainingBudgetPercent <= 5;
   const isCritical = remainingBudgetPercent < 20;
   const isWarning = remainingBudgetPercent >= 20 && remainingBudgetPercent < 50;
 
-  // Chart data for donut representation: [Remaining, Consumed]
   const data = [
     { name: 'Remaining', value: Math.max(0, remainingBudgetPercent) },
     { name: 'Consumed', value: Math.max(0, budgetConsumedPercent) }
   ];
 
   const remainingColor = isCritical
-    ? '#ef4444' // red-500
+    ? '#ef4444' // ruby rose
     : isWarning
-    ? '#f59e0b' // amber-500
-    : '#10b981'; // emerald-500
+    ? '#f59e0b' // amber
+    : '#10b981'; // emerald green
 
-  const consumedColor = '#27272a'; // zinc-800
+  const consumedColor = '#1e293b'; // slate-800
 
   return (
-    <div className="bg-zinc-900/70 border border-zinc-800 rounded-xl p-5 shadow-xl flex flex-col justify-between backdrop-blur-sm relative overflow-hidden">
-      {/* Top Banner when budget is exhausted */}
+    <div className="glass-panel rounded-2xl p-5 shadow-2xl flex flex-col justify-between relative overflow-hidden">
+      {/* Exhausted Budget Alert Bar */}
       {isExhausted && (
-        <div className="absolute top-0 inset-x-0 bg-rose-600/90 text-white px-3 py-1 text-xs font-semibold flex items-center justify-center gap-1.5 shadow">
-          <AlertTriangle className="w-3.5 h-3.5" />
+        <div className="absolute top-0 inset-x-0 bg-gradient-to-r from-red-600 to-rose-600 text-white px-3 py-1.5 text-xs font-mono font-bold flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(239,68,68,0.7)] animate-pulse z-10">
+          <AlertTriangle className="w-4 h-4" />
           CRITICAL: ERROR BUDGET IS EXHAUSTED OR NEAR ZERO
         </div>
       )}
 
       <div>
         {/* Header */}
-        <div className={`flex items-center justify-between pb-3 border-b border-zinc-800/80 ${isExhausted ? 'pt-5' : ''}`}>
+        <div className={`flex items-center justify-between pb-3 border-b border-slate-800 ${isExhausted ? 'pt-6' : ''}`}>
           <div>
-            <h3 className="text-sm font-semibold text-white flex items-center gap-2">
-              <Shield className="w-4 h-4 text-emerald-400" />
-              SLO Error Budget Status
+            <h3 className="text-sm font-bold text-white flex items-center gap-2 font-mono">
+              <Shield className="w-4 h-4 text-cyan-400 drop-shadow-[0_0_8px_rgba(6,182,212,0.8)]" />
+              SLO ERROR BUDGET
             </h3>
-            <p className="text-xs text-zinc-400">Google SRE rolling 30-day budget window</p>
+            <p className="text-[11px] text-slate-400">Rolling 30-day SRE consumption window</p>
           </div>
           <span
-            className={`text-xs px-2.5 py-0.5 rounded-full font-mono font-medium border ${
+            className={`text-xs px-3 py-1 rounded-full font-mono font-bold border ${
               isCritical
-                ? 'bg-rose-950/60 text-rose-300 border-rose-800'
+                ? 'bg-rose-950/80 text-rose-300 border-rose-500/60 shadow-[0_0_10px_rgba(239,68,68,0.3)]'
                 : isWarning
-                ? 'bg-amber-950/60 text-amber-300 border-amber-800'
-                : 'bg-emerald-950/60 text-emerald-300 border-emerald-800'
+                ? 'bg-amber-950/80 text-amber-300 border-amber-500/60 shadow-[0_0_10px_rgba(245,158,11,0.3)]'
+                : 'bg-emerald-950/80 text-emerald-300 border-emerald-500/60 shadow-[0_0_10px_rgba(16,185,129,0.3)]'
             }`}
           >
             {isExhausted
-              ? 'Exhausted'
+              ? 'EXHAUSTED'
               : isCritical
-              ? 'Critical Low'
+              ? 'CRITICAL LOW'
               : isWarning
-              ? 'At Risk'
-              : 'Healthy'}
+              ? 'WARNING'
+              : 'HEALTHY BUFFER'}
           </span>
         </div>
 
-        {/* Center Donut / Gauge */}
+        {/* Center Donut / Radial Gauge */}
         <div className="relative my-4 flex items-center justify-center">
-          <div className="w-44 h-44 relative">
+          <div className="w-48 h-48 relative">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
                   data={data}
                   cx="50%"
                   cy="50%"
-                  innerRadius={55}
-                  outerRadius={75}
+                  innerRadius={60}
+                  outerRadius={82}
                   startAngle={90}
                   endAngle={-270}
                   dataKey="value"
@@ -99,29 +95,31 @@ export const BudgetGauge: React.FC<BudgetGaugeProps> = ({
                 </Pie>
               </PieChart>
             </ResponsiveContainer>
-            {/* Center label */}
+            {/* Center label with glowing typography */}
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-              <span className="text-2xl font-bold font-mono text-white tracking-tight">
+              <span className="text-3xl font-black font-mono text-white tracking-tight drop-shadow-[0_0_12px_rgba(255,255,255,0.4)]">
                 {remainingBudgetPercent.toFixed(1)}%
               </span>
-              <span className="text-[11px] text-zinc-400 font-medium">Remaining</span>
+              <span className="text-[11px] font-mono text-cyan-300 font-bold uppercase tracking-wider">
+                REMAINING
+              </span>
             </div>
           </div>
         </div>
 
-        {/* Budget breakdown metrics */}
-        <div className="grid grid-cols-2 gap-2 text-xs mb-3">
-          <div className="p-2.5 rounded-lg bg-zinc-950/60 border border-zinc-800/80">
-            <span className="text-zinc-500 block text-[11px]">SLO Target</span>
-            <span className="text-zinc-200 font-mono font-semibold text-sm">
+        {/* Budget breakdown metrics grid */}
+        <div className="grid grid-cols-2 gap-2 text-xs mb-3 font-mono">
+          <div className="p-2.5 rounded-xl bg-slate-950/70 border border-slate-800 shadow-inner">
+            <span className="text-slate-500 block text-[10px] uppercase">SLO Target</span>
+            <span className="text-slate-100 font-bold text-sm">
               {sloTarget.toFixed(2)}%
             </span>
           </div>
 
-          <div className="p-2.5 rounded-lg bg-zinc-950/60 border border-zinc-800/80">
-            <span className="text-zinc-500 block text-[11px]">Observed Availability</span>
+          <div className="p-2.5 rounded-xl bg-slate-950/70 border border-slate-800 shadow-inner">
+            <span className="text-slate-500 block text-[10px] uppercase">Observed Availability</span>
             <span
-              className={`font-mono font-semibold text-sm ${
+              className={`font-bold text-sm ${
                 observedAvailability < sloTarget ? 'text-rose-400' : 'text-emerald-400'
               }`}
             >
@@ -129,16 +127,16 @@ export const BudgetGauge: React.FC<BudgetGaugeProps> = ({
             </span>
           </div>
 
-          <div className="p-2.5 rounded-lg bg-zinc-950/60 border border-zinc-800/80">
-            <span className="text-zinc-500 block text-[11px]">Allowed Unavailability</span>
-            <span className="text-zinc-300 font-mono text-xs">{allowedUnavailability}%</span>
+          <div className="p-2.5 rounded-xl bg-slate-950/70 border border-slate-800 shadow-inner">
+            <span className="text-slate-500 block text-[10px] uppercase">Allowed Outage</span>
+            <span className="text-slate-300 text-xs font-semibold">{allowedUnavailability}%</span>
           </div>
 
-          <div className="p-2.5 rounded-lg bg-zinc-950/60 border border-zinc-800/80">
-            <span className="text-zinc-500 block text-[11px]">Consumed Budget</span>
+          <div className="p-2.5 rounded-xl bg-slate-950/70 border border-slate-800 shadow-inner">
+            <span className="text-slate-500 block text-[10px] uppercase">Budget Consumed</span>
             <span
-              className={`font-mono text-xs font-semibold ${
-                budgetConsumedPercent > 80 ? 'text-rose-400' : 'text-zinc-300'
+              className={`text-xs font-bold ${
+                budgetConsumedPercent > 80 ? 'text-rose-400' : 'text-slate-300'
               }`}
             >
               {budgetConsumedPercent.toFixed(1)}%
@@ -147,14 +145,14 @@ export const BudgetGauge: React.FC<BudgetGaugeProps> = ({
         </div>
       </div>
 
-      {/* Footer advice */}
+      {/* Footer advice badge */}
       <div
-        className={`p-2.5 rounded-lg border text-xs flex items-start gap-2 ${
+        className={`p-3 rounded-xl border text-xs flex items-start gap-2.5 ${
           isCritical
-            ? 'bg-rose-950/30 border-rose-900/60 text-rose-300'
+            ? 'bg-rose-950/40 border-rose-500/50 text-rose-200'
             : isWarning
-            ? 'bg-amber-950/30 border-amber-900/60 text-amber-300'
-            : 'bg-emerald-950/30 border-emerald-900/60 text-emerald-300'
+            ? 'bg-amber-950/40 border-amber-500/50 text-amber-200'
+            : 'bg-emerald-950/40 border-emerald-500/50 text-emerald-200'
         }`}
       >
         {isCritical ? (
@@ -162,14 +160,14 @@ export const BudgetGauge: React.FC<BudgetGaugeProps> = ({
         ) : (
           <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
         )}
-        <div>
+        <div className="font-sans font-medium text-[11px] leading-relaxed">
           {isExhausted
-            ? 'Budget exhausted. Non-critical releases must wait or receive VP reliability sign-off.'
+            ? 'Budget exhausted. Non-emergency releases must wait or require SRE waiver.'
             : isCritical
-            ? 'Budget severely depleted. Deployments without canary safeguards risk SLA breach.'
+            ? 'Budget severely depleted. Shipments without canary safeguards risk SLA breach.'
             : isWarning
-            ? 'Moderate budget consumption. Canary safeguards and active monitoring recommended.'
-            : 'Error budget is healthy. Reliability targets allow standard deployment velocity.'}
+            ? 'Moderate budget consumption. Canary safeguards and active monitoring enforced.'
+            : 'Error budget capacity is healthy. Normal release velocity authorized.'}
         </div>
       </div>
     </div>

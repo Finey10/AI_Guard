@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ReleaseAnalysisRequest, ChangeSize } from '@/lib/types';
-import { Play, RotateCcw, AlertCircle, Info, Activity, Clock, ShieldCheck, FileText } from 'lucide-react';
+import { ReleaseAnalysisRequest } from '@/lib/types';
+import { Play, RotateCcw, AlertCircle, Activity, Clock, ShieldCheck, ChevronDown, Edit3 } from 'lucide-react';
 
 interface MetricFormProps {
   initialValues: ReleaseAnalysisRequest;
@@ -11,13 +11,54 @@ interface MetricFormProps {
   onReset: () => void;
 }
 
-const COMMON_SERVICES = [
-  'checkout-service',
-  'payment-gateway',
-  'auth-service',
-  'inventory-api',
-  'notification-worker',
-  'search-service'
+export interface ServiceCategory {
+  category: string;
+  services: {
+    id: string;
+    label: string;
+    defaultSlo: number;
+    defaultThresholdMs: number;
+  }[];
+}
+
+const PRODUCTION_SERVICES: ServiceCategory[] = [
+  {
+    category: 'Tier 1 — Mission-Critical Commerce & Finance',
+    services: [
+      { id: 'checkout-service', label: 'checkout-service (Order Processing & Cart)', defaultSlo: 99.9, defaultThresholdMs: 250 },
+      { id: 'payment-gateway', label: 'payment-gateway (PSP & Card Settlement)', defaultSlo: 99.95, defaultThresholdMs: 200 },
+      { id: 'billing-engine', label: 'billing-engine (Invoicing & Subscriptions)', defaultSlo: 99.9, defaultThresholdMs: 300 },
+      { id: 'ledger-service', label: 'ledger-service (Double-Entry Balances)', defaultSlo: 99.99, defaultThresholdMs: 150 },
+      { id: 'fraud-detector', label: 'fraud-detector (Risk Scoring & 3D Secure)', defaultSlo: 99.5, defaultThresholdMs: 120 }
+    ]
+  },
+  {
+    category: 'Tier 1 — Identity, Security & Gateway',
+    services: [
+      { id: 'api-gateway', label: 'api-gateway (Edge Proxy & Ingress)', defaultSlo: 99.99, defaultThresholdMs: 80 },
+      { id: 'auth-service', label: 'auth-service (OAuth2 & Token Authority)', defaultSlo: 99.99, defaultThresholdMs: 100 },
+      { id: 'user-session-service', label: 'user-session-service (Redis Session IAM)', defaultSlo: 99.95, defaultThresholdMs: 60 }
+    ]
+  },
+  {
+    category: 'Tier 2 — Commerce, Catalog & Search',
+    services: [
+      { id: 'inventory-api', label: 'inventory-api (Stock & Warehouse Lock)', defaultSlo: 99.5, defaultThresholdMs: 220 },
+      { id: 'search-service', label: 'search-service (Elasticsearch Product Query)', defaultSlo: 99.5, defaultThresholdMs: 180 },
+      { id: 'catalog-service', label: 'catalog-service (Product SKU Catalog)', defaultSlo: 99.5, defaultThresholdMs: 200 },
+      { id: 'pricing-discount-engine', label: 'pricing-discount-engine (Dynamic Promotions)', defaultSlo: 99.5, defaultThresholdMs: 160 },
+      { id: 'recommendation-ml', label: 'recommendation-ml (Vector Personalization)', defaultSlo: 99.0, defaultThresholdMs: 250 }
+    ]
+  },
+  {
+    category: 'Tier 3 — Async Workers & Infrastructure',
+    services: [
+      { id: 'notification-worker', label: 'notification-worker (Email, SMS & Webhooks)', defaultSlo: 99.0, defaultThresholdMs: 500 },
+      { id: 'kafka-event-consumer', label: 'kafka-event-consumer (Event Stream Bus)', defaultSlo: 99.0, defaultThresholdMs: 400 },
+      { id: 'analytics-ingest', label: 'analytics-ingest (Telemetry Pipeline)', defaultSlo: 98.5, defaultThresholdMs: 600 },
+      { id: 'media-transcoder', label: 'media-transcoder (Asset Optimization)', defaultSlo: 98.0, defaultThresholdMs: 1000 }
+    ]
+  }
 ];
 
 export const MetricForm: React.FC<MetricFormProps> = ({
@@ -28,11 +69,15 @@ export const MetricForm: React.FC<MetricFormProps> = ({
 }) => {
   const [formData, setFormData] = useState<ReleaseAnalysisRequest>(initialValues);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isCustomService, setIsCustomService] = useState<boolean>(false);
 
-  // Synchronize when initialValues changes (e.g., when a preset is picked)
   React.useEffect(() => {
     setFormData(initialValues);
     setErrors({});
+    const isKnown = PRODUCTION_SERVICES.some((group) =>
+      group.services.some((s) => s.id === initialValues.service_name)
+    );
+    setIsCustomService(!isKnown && initialValues.service_name !== '');
   }, [initialValues]);
 
   const validate = (): boolean => {
@@ -52,18 +97,6 @@ export const MetricForm: React.FC<MetricFormProps> = ({
 
     if (formData.error_rate_percent < 0 || formData.error_rate_percent > 100) {
       newErrors.error_rate_percent = 'Error rate must be between 0% and 100%';
-    }
-
-    if (formData.latency_ms < 0) {
-      newErrors.latency_ms = 'Latency must be a positive number';
-    }
-
-    if (formData.latency_threshold_ms <= 0) {
-      newErrors.latency_threshold_ms = 'Threshold must be greater than 0';
-    }
-
-    if (formData.recent_incidents < 0) {
-      newErrors.recent_incidents = 'Incidents count cannot be negative';
     }
 
     if (!formData.proposed_deployment_time) {
@@ -98,102 +131,130 @@ export const MetricForm: React.FC<MetricFormProps> = ({
     }
   };
 
+  const handleSelectService = (selectedId: string) => {
+    if (selectedId === '__custom__') {
+      setIsCustomService(true);
+      return;
+    }
+
+    setIsCustomService(false);
+    for (const group of PRODUCTION_SERVICES) {
+      const match = group.services.find((s) => s.id === selectedId);
+      if (match) {
+        setFormData((prev) => ({
+          ...prev,
+          service_name: match.id,
+          slo_target: match.defaultSlo,
+          latency_threshold_ms: match.defaultThresholdMs
+        }));
+        return;
+      }
+    }
+
+    handleChange('service_name', selectedId);
+  };
+
   return (
-    <div className="bg-zinc-900/70 border border-zinc-800 rounded-xl p-5 shadow-xl backdrop-blur-sm">
-      <div className="flex items-center justify-between pb-4 mb-4 border-b border-zinc-800">
-        <div>
-          <h2 className="text-base font-semibold text-white flex items-center gap-2">
-            <Activity className="w-4 h-4 text-blue-400" />
-            Release & Reliability Parameters
-          </h2>
-          <p className="text-xs text-zinc-400">
-            Define service health telemetry, change size, and planned deployment schedule.
-          </p>
-        </div>
+    <div className="glass-panel rounded-2xl p-5 shadow-2xl">
+      <div className="flex items-center justify-between pb-3 mb-4 border-b border-slate-800">
+        <h2 className="text-sm font-bold text-white flex items-center gap-2 font-mono">
+          <Activity className="w-4 h-4 text-cyan-400" />
+          RELEASE TELEMETRY
+        </h2>
         <button
           type="button"
           onClick={onReset}
-          className="text-xs text-zinc-400 hover:text-zinc-200 flex items-center gap-1 transition-colors px-2 py-1 rounded hover:bg-zinc-800"
-          title="Reset form to defaults"
+          className="text-xs font-mono text-slate-400 hover:text-cyan-300 flex items-center gap-1 transition-colors px-2 py-1 rounded hover:bg-slate-800"
+          title="Reset to defaults"
         >
           <RotateCcw className="w-3.5 h-3.5" />
-          Reset
+          RESET
         </button>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Service Name & Change Size */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-xs font-medium text-zinc-300 mb-1">
-              Service Name <span className="text-rose-400">*</span>
+        {/* Target Service Dropdown */}
+        <div>
+          <div className="flex items-center justify-between mb-1.5">
+            <label className="block text-xs font-mono font-bold text-slate-300 uppercase">
+              Target Service <span className="text-rose-400">*</span>
             </label>
+            <button
+              type="button"
+              onClick={() => setIsCustomService(!isCustomService)}
+              className="text-[10px] font-mono text-cyan-400 hover:text-cyan-300 flex items-center gap-1"
+            >
+              <Edit3 className="w-3 h-3" />
+              {isCustomService ? 'Choose list' : 'Custom'}
+            </button>
+          </div>
+
+          {!isCustomService ? (
+            <div className="relative">
+              <select
+                value={formData.service_name}
+                onChange={(e) => handleSelectService(e.target.value)}
+                className={`w-full bg-slate-950/90 border ${
+                  errors.service_name ? 'border-rose-500' : 'border-slate-800 focus:border-cyan-400'
+                } rounded-xl px-3 py-2 text-sm text-cyan-200 focus:outline-none focus:ring-1 focus:ring-cyan-400/50 font-mono shadow-inner appearance-none cursor-pointer pr-10`}
+              >
+                {PRODUCTION_SERVICES.map((group) => (
+                  <optgroup
+                    key={group.category}
+                    label={group.category}
+                    className="bg-slate-900 text-slate-300 font-bold"
+                  >
+                    {group.services.map((svc) => (
+                      <option
+                        key={svc.id}
+                        value={svc.id}
+                        className="bg-slate-950 text-cyan-200 py-1 font-mono"
+                      >
+                        {svc.label}
+                      </option>
+                    ))}
+                  </optgroup>
+                ))}
+                <option value="__custom__" className="bg-slate-900 text-amber-300 font-bold">
+                  + Custom Microservice Name...
+                </option>
+              </select>
+              <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-cyan-400">
+                <ChevronDown className="w-4 h-4" />
+              </div>
+            </div>
+          ) : (
             <div className="relative">
               <input
                 type="text"
-                list="service-list"
                 value={formData.service_name}
                 onChange={(e) => handleChange('service_name', e.target.value)}
-                placeholder="e.g. checkout-service"
-                className={`w-full bg-zinc-950 border ${
-                  errors.service_name ? 'border-rose-500' : 'border-zinc-800'
-                } rounded-lg px-3 py-2 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-blue-500 font-mono`}
+                placeholder="Enter custom service identifier, e.g. order-dispatcher"
+                className={`w-full bg-slate-950/90 border ${
+                  errors.service_name ? 'border-rose-500' : 'border-slate-800 focus:border-cyan-400'
+                } rounded-xl px-3 py-2 text-sm text-cyan-200 placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-cyan-400/50 font-mono shadow-inner`}
               />
-              <datalist id="service-list">
-                {COMMON_SERVICES.map((s) => (
-                  <option key={s} value={s} />
-                ))}
-              </datalist>
             </div>
-            {errors.service_name && (
-              <p className="text-xs text-rose-400 mt-1 flex items-center gap-1">
-                <AlertCircle className="w-3 h-3" />
-                {errors.service_name}
-              </p>
-            )}
-            <p className="text-[11px] text-zinc-500 mt-1">Target microservice for deployment.</p>
-          </div>
+          )}
 
-          <div>
-            <label className="block text-xs font-medium text-zinc-300 mb-1">
-              Change Scope / Size <span className="text-rose-400">*</span>
-            </label>
-            <div className="grid grid-cols-3 gap-2">
-              {(['small', 'medium', 'large'] as ChangeSize[]).map((size) => (
-                <button
-                  key={size}
-                  type="button"
-                  onClick={() => handleChange('change_size', size)}
-                  className={`py-2 text-xs font-medium rounded-lg border transition-all capitalize ${
-                    formData.change_size === size
-                      ? size === 'small'
-                        ? 'bg-emerald-950/60 border-emerald-600 text-emerald-200'
-                        : size === 'medium'
-                        ? 'bg-amber-950/60 border-amber-600 text-amber-200'
-                        : 'bg-rose-950/60 border-rose-600 text-rose-200'
-                      : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:text-zinc-200'
-                  }`}
-                >
-                  {size}
-                </button>
-              ))}
-            </div>
-            <p className="text-[11px] text-zinc-500 mt-1">
-              Small: micro-fix/copy | Medium: feature branch | Large: architecture/DB migration.
+          {errors.service_name && (
+            <p className="text-xs text-rose-400 mt-1 flex items-center gap-1 font-mono">
+              <AlertCircle className="w-3 h-3" />
+              {errors.service_name}
             </p>
-          </div>
+          )}
         </div>
 
         {/* SLO & Availability Telemetry */}
-        <div className="p-3.5 rounded-lg bg-zinc-950/60 border border-zinc-800/80 space-y-3">
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-zinc-300">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-            SLO & Reliability Indicators (30-Day Window)
+        <div className="p-3.5 rounded-xl bg-slate-950/70 border border-cyan-500/20 space-y-3 shadow-inner">
+          <div className="flex items-center gap-2 text-xs font-mono font-bold text-cyan-300">
+            <ShieldCheck className="w-4 h-4 text-emerald-400" />
+            <span>SLO INDICATORS</span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
             <div>
-              <label className="block text-[11px] font-medium text-zinc-400 mb-1">
+              <label className="block text-[11px] font-mono text-slate-400 mb-1 truncate">
                 SLO Target (%)
               </label>
               <input
@@ -203,14 +264,13 @@ export const MetricForm: React.FC<MetricFormProps> = ({
                 max="99.999"
                 value={formData.slo_target}
                 onChange={(e) => handleChange('slo_target', parseFloat(e.target.value) || 0)}
-                className="w-full bg-zinc-900 border border-zinc-800 rounded-md px-2.5 py-1.5 text-xs text-zinc-100 font-mono focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-cyan-200 font-mono focus:outline-none focus:ring-1 focus:ring-cyan-400"
               />
-              <span className="text-[10px] text-zinc-500">e.g. 99.9% uptime</span>
             </div>
 
             <div>
-              <label className="block text-[11px] font-medium text-zinc-400 mb-1">
-                Observed Availability (%)
+              <label className="block text-[11px] font-mono text-slate-400 mb-1 truncate">
+                Availability (%)
               </label>
               <input
                 type="number"
@@ -221,13 +281,12 @@ export const MetricForm: React.FC<MetricFormProps> = ({
                 onChange={(e) =>
                   handleChange('observed_availability', parseFloat(e.target.value) || 0)
                 }
-                className="w-full bg-zinc-900 border border-zinc-800 rounded-md px-2.5 py-1.5 text-xs text-zinc-100 font-mono focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-cyan-200 font-mono focus:outline-none focus:ring-1 focus:ring-cyan-400"
               />
-              <span className="text-[10px] text-zinc-500">Current 30d measurement</span>
             </div>
 
             <div>
-              <label className="block text-[11px] font-medium text-zinc-400 mb-1">
+              <label className="block text-[11px] font-mono text-slate-400 mb-1 truncate">
                 Error Rate (%)
               </label>
               <input
@@ -239,117 +298,46 @@ export const MetricForm: React.FC<MetricFormProps> = ({
                 onChange={(e) =>
                   handleChange('error_rate_percent', parseFloat(e.target.value) || 0)
                 }
-                className="w-full bg-zinc-900 border border-zinc-800 rounded-md px-2.5 py-1.5 text-xs text-zinc-100 font-mono focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-cyan-200 font-mono focus:outline-none focus:ring-1 focus:ring-cyan-400"
               />
-              <span className="text-[10px] text-zinc-500">5xx / total requests</span>
             </div>
           </div>
         </div>
 
-        {/* Latency & Incident Context */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div>
-            <label className="block text-xs font-medium text-zinc-300 mb-1">
-              Current Latency (ms)
-            </label>
-            <input
-              type="number"
-              min="1"
-              value={formData.latency_ms}
-              onChange={(e) => handleChange('latency_ms', parseInt(e.target.value) || 0)}
-              className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-1.5 text-sm text-zinc-100 font-mono focus:outline-none focus:ring-1 focus:ring-blue-500"
-            />
-            <span className="text-[11px] text-zinc-500">P95 service latency</span>
-          </div>
-
-          <div>
-            <label className="block text-xs font-medium text-zinc-300 mb-1">
-              Latency SLA Threshold (ms)
-            </label>
-            <input
-              type="number"
-              min="1"
-              value={formData.latency_threshold_ms}
-              onChange={(e) =>
-                handleChange('latency_threshold_ms', parseInt(e.target.value) || 0)
-              }
-              className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-1.5 text-sm text-zinc-100 font-mono focus:outline-none focus:ring-1 focus:ring-blue-500"
-            />
-            <span className="text-[11px] text-zinc-500">Max allowable threshold</span>
-          </div>
-
-          <div>
-            <label className="block text-xs font-medium text-zinc-300 mb-1">
-              Recent Incidents (7-day)
-            </label>
-            <input
-              type="number"
-              min="0"
-              max="20"
-              value={formData.recent_incidents}
-              onChange={(e) => handleChange('recent_incidents', parseInt(e.target.value) || 0)}
-              className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-1.5 text-sm text-zinc-100 font-mono focus:outline-none focus:ring-1 focus:ring-blue-500"
-            />
-            <span className="text-[11px] text-zinc-500">Outages on this service</span>
-          </div>
-        </div>
-
-        {/* Proposed Deployment Time & Release Notes */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-xs font-medium text-zinc-300 mb-1 flex items-center gap-1.5">
-              <Clock className="w-3.5 h-3.5 text-cyan-400" />
-              Proposed Deployment Time <span className="text-rose-400">*</span>
-            </label>
-            <input
-              type="datetime-local"
-              value={formData.proposed_deployment_time}
-              onChange={(e) => handleChange('proposed_deployment_time', e.target.value)}
-              className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
-            />
-            <p className="text-[11px] text-zinc-500 mt-1">
-              Evaluated against peak hours (11-14, 17-21) and weekend freeze windows.
-            </p>
-          </div>
-
-          <div>
-            <label className="block text-xs font-medium text-zinc-300 mb-1 flex items-center gap-1.5">
-              <FileText className="w-3.5 h-3.5 text-zinc-400" />
-              Release Notes / PR Description (Optional)
-            </label>
-            <input
-              type="text"
-              value={formData.release_notes || ''}
-              onChange={(e) => handleChange('release_notes', e.target.value)}
-              placeholder="e.g. Migration to v2 auth endpoints"
-              className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-            />
-            <p className="text-[11px] text-zinc-500 mt-1">
-              Used for semantic similarity against past outage postmortems.
-            </p>
-          </div>
+        {/* Proposed Deployment Time */}
+        <div>
+          <label className="block text-xs font-mono font-bold text-slate-300 mb-1 flex items-center gap-1.5 uppercase">
+            <Clock className="w-3.5 h-3.5 text-cyan-400" />
+            Deployment Time <span className="text-rose-400">*</span>
+          </label>
+          <input
+            type="datetime-local"
+            value={formData.proposed_deployment_time}
+            onChange={(e) => handleChange('proposed_deployment_time', e.target.value)}
+            className="w-full bg-slate-950/80 border border-slate-800 focus:border-cyan-400 rounded-xl px-3 py-2 text-sm text-cyan-200 font-mono focus:outline-none focus:ring-1 focus:ring-cyan-400/50"
+          />
         </div>
 
         {/* Action Button */}
-        <div className="pt-2">
+        <div className="pt-1">
           <button
             type="submit"
             disabled={isLoading}
-            className={`w-full py-2.5 px-4 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 transition-all shadow-lg ${
+            className={`w-full py-3 px-4 rounded-xl font-mono font-bold text-sm tracking-wider uppercase flex items-center justify-center gap-2 transition-all duration-300 ${
               isLoading
-                ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
-                : 'bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-500 hover:from-blue-500 hover:to-indigo-500 text-white shadow-blue-500/20 active:scale-[0.99]'
+                ? 'bg-slate-800 text-slate-500 cursor-not-allowed'
+                : 'bg-gradient-to-r from-red-600 via-rose-600 to-red-500 hover:from-red-500 hover:to-rose-500 text-white shadow-[0_0_25px_rgba(239,68,68,0.4)] active:scale-[0.99] border border-red-500/50'
             }`}
           >
             {isLoading ? (
               <>
-                <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-                <span>Running Multi-Agent Reliability Analysis...</span>
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                <span>ANALYZING SAFETY...</span>
               </>
             ) : (
               <>
-                <Play className="w-4 h-4 fill-current" />
-                <span>Analyze Release Safety</span>
+                <Play className="w-4 h-4 fill-current text-white" />
+                <span>ANALYZE RELEASE SAFETY</span>
               </>
             )}
           </button>
