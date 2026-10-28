@@ -4,6 +4,7 @@ backend/venv/
 ENV/
 env/
 .env
+*.zip
 
 # Python Cache
 __pycache__/
