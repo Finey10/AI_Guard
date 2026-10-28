@@ -4,6 +4,8 @@
 
 An AI-powered deploy-time risk dashboard that brings reliability targets and change risk into the moment of release.
 
+![Zero Latency ReleaseGuard AI Dashboard](dashboard_preview.jpg)
+
 ---
 
 ## Team Zero Latency | UG-42 | Domain: AI Ops

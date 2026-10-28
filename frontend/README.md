@@ -10,6 +10,8 @@
 
 Zero Latency ReleaseGuard AI is a DevOps/SRE dashboard that brings real-time error-budget health and change-risk estimation into the moment of release.
 
+![Zero Latency ReleaseGuard AI Dashboard](public/dashboard_preview.jpg)
+
 ### Core Capabilities:
 - **Error Budget Real-Time Visibility:** Radial gauge tracking Google SRE 30-day rolling error budgets, allowed unavailability, consumed ratio, and remaining headroom.
 - **Calibrated Multi-Factor Risk Meter:** Continuous 0–100 risk score based on blast radius, change scope, recent outage frequency, latency deviation, and traffic calendar alignment.
