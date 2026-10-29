@@ -1,84 +1,174 @@
 # SignalOps 🛡️
 
-**AO-05: Is this release safe to ship right now?**
+**AO-05: Is this release safe to ship right now?**  
+*An AI-powered, pre-flight release risk advisor bringing SLO reliability targets, error budgets, and change hazards into the moment of deployment.*
 
-An AI-powered deploy-time risk dashboard and decision support system that brings reliability targets, error budgets, and change risk into the moment of release.
+[![Live App](https://img.shields.io/badge/Hosted%20App-ai--guard--amber.vercel.app-00dcff?style=for-the-badge&logo=vercel)](https://ai-guard-amber.vercel.app/)
+[![Tests Passing](https://img.shields.io/badge/Tests-61%2F61%20Passing-00ff82?style=for-the-badge&logo=pytest)](https://github.com/Finey10/AI_Guard)
+[![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com)
+[![Next.js](https://img.shields.io/badge/Frontend-Next.js%2016-black?style=for-the-badge&logo=next.js)](https://nextjs.org)
 
-![SignalOps Dashboard](dashboard_preview.jpg)
+🌐 **Live Deployed Application:** [https://ai-guard-amber.vercel.app/](https://ai-guard-amber.vercel.app/)  
+📁 **GitHub Repository:** [https://github.com/Finey10/AI_Guard](https://github.com/Finey10/AI_Guard)
 
 ---
 
-## Team Zero Latency | UG-42 | Domain: AI Ops
+## 👥 Team Zero Latency | UG-42 | Domain: AI Ops
 
-**Members:** Varala Vamsa Sarga · Meen Ren Tharquia · Debarek Jalmaltheerga · Ruth Vardalwati
+* **Varala Vamsa Sarga**
+* **Meen Ren Tharquia**
+* **Debarek Jalmaltheerga**
+* **Ruth Vardalwati**
 
 ---
 
-## Project Structure
+## 💡 The Problem
+In modern DevOps, over 90% of production outages occur from valid, compiling code deployed at the wrong time under degraded system conditions. Developers deploy by gut-feel, static checklists, or binary CI/CD pass/fail signals. SLO documents sit unread in Confluence while error budgets burn silently.
+
+**SignalOps** acts as an Air Traffic Controller for software releases. It evaluates live system health, error budget headroom, latency degradation, recent incidents, and corporate calendar freeze windows to deliver an explainable **GO / GO_WITH_SAFE_GUARD / WAIT** verdict before code hits production.
+
+---
+
+## 🏗️ 3-Tier Neuro-Symbolic Architecture
+
+SignalOps strictly separates **mathematical risk computation** from **AI natural-language explanation**:
+
+```
+[ Tier 1: Next.js 16 Dashboard ]  (Port 3000 / Vercel)
+               │
+               ▼  HTTP POST /api/analyze-release
+[ Tier 2: AI Agent Orchestrator ]  (Port 8000 / ai/service.py)
+   ├── 1. Budget Agent      ──> Evaluates SLO availability & remaining error budget
+   ├── 2. Risk Agent        ──> Analyzes multi-factor contributions & dominant hazards
+   ├── 3. Explanation Agent ──> Synthesizes SRE rationale via Groq LLaMA 3.3 / Fallback
+   └── 🛡️ Invariant Guard   ──> Programmatic barrier: AI can NEVER override WAIT to GO
+               │
+               ▼  Direct in-process call
+[ Tier 3: Deterministic Engine ]   (backend/risk_engine.py)
+   └── 5-Factor Weighted Scoring (Budget 30% + Errors 25% + Latency 20% + Incidents 15% + Size 10%)
+```
+
+---
+
+## 📂 Project Structure
 
 ```
 SignalOps/
-├── frontend/     # Next.js 16 + TypeScript + Tailwind CSS dashboard
-├── backend/      # Python FastAPI + Deterministic Risk Engine + LangChain agents
-└── data-ml/      # Data processing, SLO formulas, ML risk model
+├── frontend/               # Next.js 16 + TypeScript + Tailwind CSS dashboard
+│   ├── src/app/            # App router pages & global theme
+│   ├── src/components/     # MetricForm, BudgetGauge, RiskPanel, SignalIndicator
+│   └── src/lib/            # API connector & offline deterministic simulation
+├── backend/                # Pure Python Deterministic Risk Engine & REST API
+│   ├── main.py             # FastAPI entrypoint
+│   ├── risk_engine.py      # 5-factor mathematical scoring & force-WAIT invariants
+│   ├── data_service.py     # Service catalog & deployment calendar evaluator
+│   ├── data/               # Synthetic services, history, and freeze calendar
+│   └── tests/              # 23 unit & integration tests (pytest)
+├── ai/                     # Multi-Agent AI Orchestration Layer
+│   ├── service.py          # Unified FastAPI orchestration service
+│   ├── orchestrator.py     # Sequential multi-agent pipeline coordinator
+│   ├── budget_agent.py     # Agent 1: SLO error budget evaluator
+│   ├── risk_agent.py       # Agent 2: Telemetry & historical hazard analyzer
+│   ├── explanation_agent.py# Agent 3: Groq LLaMA 3.3 / Gemini / Fallback synthesizer
+│   ├── ai_advisor.py       # Heuristic explanation advisor & schema models
+│   └── tests/              # 38 agent & safety invariant tests
+├── SignalOps_Test_Cases.pdf# Phase 3 formal test documentation (30+ test cases)
+├── requirements.txt        # Root production dependencies
+└── pytest.ini              # Unified test runner configuration
 ```
 
 ---
 
-## Quick Start
+## ⚙️ 5-Factor Risk Engine & Scoring Formula
 
-### 1. Backend (FastAPI + Risk Engine)
+The risk score is calculated deterministically on a **0 – 100 scale**:
+
+| Factor | Weight | Evaluation Criteria |
+|---|---|---|
+| **💰 Error Budget Consumption** | **30 pts** | Ratio of allowed downtime consumed vs. remaining headroom |
+| **⚠️ Error Rate Spike** | **25 pts** | Percentage error rate relative to healthy baselines |
+| **⏱️ Latency Degradation** | **20 pts** | Observed p99 latency vs. service threshold |
+| **🔥 Recent Incidents (30d)** | **15 pts** | Recent production Sev-1/Sev-2 incident frequency |
+| **📦 Pull Request Change Size** | **10 pts** | small (2 pts), medium (6 pts), large (10 pts) |
+
+### Verdict Bands:
+* **✅ GO (0 – 29):** Low risk. Safe to ship with standard telemetry monitoring.
+* **🛡️ GO WITH SAFEGUARD (30 – 59):** Elevated risk. Deploy with canary routing & human rollback readiness.
+* **🚫 WAIT (60 – 100):** High risk. Release held until error budget recovers or fixes are applied.
+
+> **⚡ Non-Negotiable Force-WAIT Invariants:**  
+> Regardless of score, the system automatically forces **WAIT** if:
+> 1. Error budget is fully exhausted (0% remaining).
+> 2. Observed availability is strictly below the SLO target (`observed_availability < slo_target`).
+> 3. Deployment window intersects an organizational freeze or peak-traffic window.
+
+---
+
+## 🚀 Quick Start Guide
+
+### Prerequisites
+* Python 3.11+
+* Node.js 18+ & npm
+
+### 1. Start Backend & AI Agent Service
 ```bash
-cd backend
+# From the repository root:
 python -m venv venv
-venv\Scripts\activate
+venv\Scripts\activate      # On Windows (or: source venv/bin/activate on Unix)
 pip install -r requirements.txt
-uvicorn main:app --reload
-```
-API Documentation & Interactive Swagger UI: `http://localhost:8000/docs`
 
-### 2. Frontend (Next.js Dashboard)
+# (Optional) Set your Groq API key for live LLM explanations:
+# In ai/.env: GROQ_API_KEY=gsk_your_key_here
+# If omitted, system seamlessly runs deterministic heuristic fallback
+
+uvicorn ai.service:app --reload --port 8000
+```
+Interactive API Swagger Docs: `http://localhost:8000/docs`
+
+### 2. Start Frontend Dashboard
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
-Access the SignalOps dashboard at `http://localhost:3000`.
+Open `http://localhost:3000` in your browser.
 
 ---
 
-## Quick Start (Backend API & AI Advisor)
+## 🧪 Automated Test Suite (61 / 61 Passing)
 
-### 1. Setup Python Environment & Dependencies
+SignalOps includes comprehensive automated test coverage across all layers:
+
 ```bash
-cd backend
-pip install -r requirements.txt
+# Run all backend unit & integration tests (23 tests):
+pytest backend/tests
+
+# Run all AI agent orchestration & invariant tests (38 tests):
+pytest ai/tests
+
+# Run the entire test suite:
+pytest
 ```
 
-### 2. Configure Environment (.env)
-```bash
-cp .env.example .env
+```text
+============================= 61 passed in 4.82s =============================
+- 14 Risk Engine Unit Tests (SLO math, boundary conditions, force-WAIT)
+- 9 Backend API Integration Tests (schemas, status codes, validations)
+- 38 AI Agent & Invariant Tests (budget states, fallback, LLM safety guards)
 ```
-Set your `GEMINI_API_KEY` (or `OPENAI_API_KEY`). If no API key is provided, the AI Advisor automatically and gracefully runs using the deterministic high-precision rule fallback engine.
-
-### 3. Launch Backend API
-```bash
-uvicorn main:app --host 0.0.0.0 --port 8000 --reload
-```
-API docs available at `http://localhost:8000/docs`.
-
-### 4. Run Test Suite
-```bash
-py -3.13 -m pytest backend/tests -v
-```
-Runs all 36 unit and integration tests including the AI Advisor invariants, fallback mechanisms, SRE guidance, anti-gaming safeguards, and API endpoints.
-
-For in-depth details on the AI Advisor module, see [backend/AI_ADVISOR.md](file:///d:/Hacksmitten/AI_Guard/backend/AI_ADVISOR.md).
 
 ---
 
-## Branches
-- `main` — stable releases
-- `frontend` — UI development
-- `backend` — API & agent development
-- `data-ml` — data processing & ML model
+## 🔒 Safety, Ethics & Responsible AI
+
+* **Advisory-Only:** SignalOps advises engineers; it does not unilaterally block deployments. Human engineers retain final authority.
+* **Invariant Safety Guard:** Hard-coded post-LLM validation prevents AI hallucinations from ever overriding a `WAIT` decision into a `GO`.
+* **Zero Developer Surveillance:** Telemetry evaluates system metrics and PR line count impact only. Author identity data is anonymized.
+* **Anti-Gaming Architecture:** Deterministic SLO thresholds and publicly documented weights prevent gaming or metric manipulation.
+
+---
+
+## 📄 Phase 3 Deliverables
+* **Formal Test Cases Document:** [`SignalOps_Test_Cases.pdf`](SignalOps_Test_Cases.pdf)
+* **Complete Source Code Package:** `SignalOps_Phase3_Code.zip`
+* **Live Hosted URL:** [https://ai-guard-amber.vercel.app/](https://ai-guard-amber.vercel.app/)
